@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<composition padding="4:000">
+    <MIDITrack channel="1" instrument="0" volume="100" pan="0" />
+    <MIDITrack channel="10" instrument="0" volume="100" pan="0" />
+    
+    <patternList>
+        <drumLoop length="4:000">
+            <note start="0:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="0:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="1:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="1:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="2:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="2:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="3:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            <note start="3:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+            
+            <note start="0:000" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+            <note start="1:000" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+            <note start="1:060" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+            <note start="2:000" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+            <note start="3:000" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+        </drumLoop>
+    
+        <patC length="2:000">
+            <note start="0:000" length="0:060" valocity="100" track="1" transposition="0 - 5">C4</note>
+            <note start="0:060" length="0:060" valocity="100" track="1">E4</note>
+            <note start="1:000" length="0:060" valocity="100" track="1">G4</note>
+            <note start="1:060" length="0:060" valocity="100" track="1">C5</note>
+        </patC>
+        <patF length="2:000">
+            <note start="0:000" length="0:060" valocity="100" track="1">F3</note>
+            <note start="0:060" length="0:060" valocity="100" track="1">A3</note>
+            <note start="1:000" length="0:060" valocity="100" track="1">C4</note>
+            <note start="1:060" length="0:060" valocity="100" track="1">F4</note>
+        </patF>
+        <patEm length="2:000">
+            <note start="0:000" length="0:060" valocity="100" track="1">E3</note>
+            <note start="0:060" length="0:060" valocity="100" track="1">G3</note>
+            <note start="1:000" length="0:060" valocity="100" track="1">B3</note>
+            <note start="1:060" length="0:060" valocity="100" track="1">E4</note>
+        </patEm>
+        <patAm length="2:000">
+            <note start="0:000" length="0:060" valocity="100" track="1">A3</note>
+            <note start="0:060" length="0:060" valocity="100" track="1">C4</note>
+            <note start="1:000" length="0:060" valocity="100" track="1">E4</note>
+            <note start="1:060" length="0:060" valocity="100" track="1">A4</note>
+        </patAm>
+        <patG length="2:000">
+            <note start="0:000" length="0:060" valocity="100" track="1">G3</note>
+            <note start="0:060" length="0:060" valocity="100" track="1">B3</note>
+            <note start="1:000" length="0:060" valocity="100" track="1">D4</note>
+            <note start="1:060" length="0:060" valocity="100" track="1">G4</note>
+        </patG>
+    </patternList>
+    
+    <trackList>
+        <pianoTrack>
+            <pianoGroup1 type="sequence">
+                <pianoLeaf1C pattern="patC" />
+                <pianoGroup1AmEm type="random">
+                    <pianoLeaf1Am pattern="patAm" probability="3" />
+                    <pianoLeaf1Em pattern="patEm" probability="2" />
+                </pianoGroup1AmEm>
+                <pianoLeaf1F pattern="patF" />
+                <pianoLeaf1G pattern="patG" />
+            </pianoGroup1>
+        </pianoTrack>
+        <drumTrack>
+            <drumGroup1 type="sequence">
+                <drumGroup1part1 pattern="drumLoop" />
+                <drumGroup1part2 pattern="drumLoop" minExecutionsFinish="0" maxExecutionsFinish="0" probabilityFinish="1" />
+            </drumGroup1>
+        </drumTrack>
+    </trackList>
+    
+    <sectionList>
+        <first tempo="120">
+            <track after="pianoTrack" />
+            <track after="drumTrack" />
+        </first>
+        <second tempo="180">
+            <pianoTrack2>
+                <pianoGroup2 type="sequence">
+                    <pianoLeaf2C>
+                        <pattern length="2:000">
+                            <note start="0:000" length="0:060" valocity="100" track="1">C4</note>
+                            <note start="0:060" length="0:060" valocity="100" track="1">E4</note>
+                            <note start="1:000" length="0:060" valocity="100" track="1">G4</note>
+                            <note start="1:060" length="0:060" valocity="100" track="1">C5</note>
+                        </pattern>
+                    </pianoLeaf2C>
+                    <pianoLeaf2Am>
+                        <pattern length="1:060">
+                            <note start="0:000" length="0:060" valocity="100" track="1">A3</note>
+                            <note start="0:060" length="0:060" valocity="100" track="1">E4</note>
+                            <note start="1:000" length="0:060" valocity="100" track="1">A4</note>
+                        </pattern>
+                    </pianoLeaf2Am>
+                    <pianoLeaf2F>
+                        <pattern length="2:000">
+                            <note start="0:000" length="0:060" valocity="100" track="1">F3</note>
+                            <note start="0:060" length="0:060" valocity="100" track="1">A3</note>
+                            <note start="1:000" length="0:060" valocity="100" track="1">C4</note>
+                            <note start="1:060" length="0:060" valocity="100" track="1">F4</note>
+                        </pattern>
+                    </pianoLeaf2F>
+                    <pianoLeaf2G minExecutionsSignal="0" maxExecutionsSignal="0" probabilitySignal="1">
+                        <pattern length="1:060">
+                            <note start="0:000" length="0:060" valocity="100" track="1">G3</note>
+                            <note start="0:060" length="0:060" valocity="100" track="1">D4</note>
+                            <note start="1:000" length="0:060" valocity="100" track="1">G4</note>
+                        </pattern>
+                    </pianoLeaf2G>
+                </pianoGroup2>
+            </pianoTrack2>
+            <drumTrack2>
+                <drumGroup2 minExecutionsSignal="0" maxExecutionsSignal="0" probabilitySignal="1">
+                    <pattern length="7:000">
+                        <note start="0:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="0:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="1:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="1:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="2:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="2:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="3:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="3:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="4:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="4:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="5:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="5:060" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="6:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        <note start="6:000" length="0:060" velocity="100" track="2">Closed Hi-hat</note>
+                        
+                        <note start="0:000" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+                        <note start="0:060" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="1:000" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+                        <note start="1:060" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="2:000" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+                        <note start="2:060" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="3:000" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="3:060" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+                        <note start="4:000" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="4:060" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+                        <note start="5:000" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="5:060" length="0:060" velocity="100" track="2">Snare Drum 2</note>
+                        <note start="6:000" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                        <note start="6:060" length="0:060" velocity="100" track="2">Bass Drum 1</note>
+                    </pattern>
+                </drumGroup2>
+            </drumTrack2>
+        </second>
+    </sectionList>
+    
+    <structure>
+        <section id="section1" after="first">
+            <arrow to="section2" maxExecutions="1" />
+        </section>
+        <section id="section2" after="second">
+            <arrow to="section1" maxExecutions="1" />
+        </section>
+    </structure>
+</composition>

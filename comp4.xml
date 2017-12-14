@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<composition>
+    <MIDITrack channel="1" instrument="0" volume="0" pan="0" />
+    <sectionList>
+        <section1 length="6:000" tempo="120">
+            <track>
+                <pianoGroup1 type="sequence">
+                    <leaf>
+                        <pattern length="1:000">
+                            <note start="0:000" length="1:000">C3</note>
+                            <note start="0:000" length="1:000">E3</note>
+                            <note start="0:000" length="1:000">G3</note>
+                        </pattern>
+                    </leaf>
+                    <leaf>
+                        <pattern length="1:000">
+                            <note start="0:000" length="1:000">C3</note>
+                            <note start="0:000" length="1:000">F3</note>
+                            <note start="0:000" length="1:000">A3</note>
+                        </pattern>
+                    </leaf>
+                    <leaf>
+                        <pattern length="1:000">
+                            <note start="0:000" length="1:000">D3</note>
+                            <note start="0:000" length="1:000">G3</note>
+                            <note start="0:000" length="1:000">B3</note>
+                        </pattern>
+                    </leaf>
+                </pianoGroup1>
+            </track>
+        </section1>
+        
+        <section2 length="8:000" tempo="150">
+            <pianoTrack2>
+                <pianoGroup2 type="sequence">
+                    <piano2Leaf1>
+                        <pattern length="1:000">
+                            <note start="0:000" length="1:000">D3</note>
+                            <note start="0:000" length="1:000">F#3</note>
+                            <note start="0:000" length="1:000">A3</note>
+                        </pattern>
+                    </piano2Leaf1>
+                    <piano2Group2 type="random">
+                        <piano2leaf2_1>
+                            <pattern length="1:000">
+                                <note start="0:000" length="1:000">D3</note>
+                                <note start="0:000" length="1:000">F#3</note>
+                                <note start="0:000" length="1:000">B3</note>
+                            </pattern>
+                        </piano2leaf2_1>
+                        <piano2leaf2_2>
+                            <pattern length="1:000">
+                                <note start="0:000" length="1:000">C#3</note>
+                                <note start="0:000" length="1:000">F#3</note>
+                                <note start="0:000" length="1:000">A3</note>
+                            </pattern>
+                        </piano2leaf2_2>
+                    </piano2Group2>
+                    <piano2Leaf3>
+                        <pattern length="1:000">
+                            <note start="0:000" length="1:000">D3</note>
+                            <note start="0:000" length="1:000">G3</note>
+                            <note start="0:000" length="1:000">B3</note>
+                        </pattern>
+                    </piano2Leaf3>
+                    <piano2Leaf4>
+                        <pattern length="1:000">
+                            <note start="0:000" length="1:000">E3</note>
+                            <note start="0:000" length="1:000">A3</note>
+                            <note start="0:000" length="1:000">C#4</note>
+                        </pattern>
+                    </piano2Leaf4>
+                </pianoGroup2>
+            </pianoTrack2>
+        </section2>
+    </sectionList>
+    
+    <structure>
+        <section id="section1" after="section1">
+            <arrow to="section2" maxExecutions="1" />
+        </section>
+        <section id="section2" after="section2">
+            <arrow to="section1" maxExecutions="1" />
+        </section>
+    </structure>
+</composition>

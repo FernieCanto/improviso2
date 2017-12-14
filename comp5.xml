@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<composition padding="4:000">
+    <MIDITrack channel="1" instrument="0" volume="100" pan="0" />
+    
+    <sectionList>
+        <firstSection length="2:000 - 8:000">
+            <pianoTrack>
+                <pianoLeafGroup>
+                    <pattern length="0:020 - 0:090">
+                        <note relativeStart="0.0" relativeLength="1.0" valocity="100" track="1" transposition="0 - 36">C1</note>
+                    </pattern>
+                </pianoLeafGroup>
+            </pianoTrack>
+        </firstSection>
+    </sectionList>
+    
+    <structure>
+        <section id="section1" after="firstSection" />
+    </structure>
+</composition>
