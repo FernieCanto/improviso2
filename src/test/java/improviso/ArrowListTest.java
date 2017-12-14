@@ -5,28 +5,18 @@
  */
 package improviso;
 
-import improviso.mocks.RandomMock;
 import org.junit.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-/**
- *
- * @author User
- */
-public class ArrowListTest {
-    RandomMock random;
-    
-    @Before
-    public void setUp() {
-        random = new RandomMock();
-    }
-    
+public class ArrowListTest extends ImprovisoTest {    
     @Test
     public void testCreateArrowList() {
         ArrowList list = new ArrowList();
         
         assertEquals(0, list.getNumArrows());
-        assertNull(list.getNextDestination(random));
+        assertNull(list.getNextDestination(getRandomMock()));
     }
     
     @Test
@@ -36,7 +26,7 @@ public class ArrowListTest {
         list.addArrow(arrowBuilder.setDestinationSection("destinationTest").build());
         
         assertEquals(1, list.getNumArrows());
-        assertEquals("destinationTest", list.getNextDestination(random));
+        assertEquals("destinationTest", list.getNextDestination(getRandomMock()));
     }
     
     @Test
@@ -58,17 +48,17 @@ public class ArrowListTest {
         
         assertEquals(3, list.getNumArrows());
         
-        random.addInteger(2);
-        assertEquals("destinationTest1", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals("destinationTest1", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(4);
-        assertEquals("destinationTest2", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(4);
+        assertEquals("destinationTest2", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(7);
-        assertEquals("destinationTest2", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(7);
+        assertEquals("destinationTest2", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(8);
-        assertEquals("destinationTest3", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(8);
+        assertEquals("destinationTest3", list.getNextDestination(getRandomMock()));
     }
     
     @Test
@@ -92,20 +82,36 @@ public class ArrowListTest {
         
         assertEquals(3, list.getNumArrows());
         
-        random.addInteger(2);
-        assertEquals("destinationTest1", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals("destinationTest1", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(2);
-        assertEquals("destinationTest2", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals("destinationTest2", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(4);
-        assertEquals("destinationTest2", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(4);
+        assertEquals("destinationTest2", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(4);
-        assertEquals("destinationTest3", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(4);
+        assertEquals("destinationTest3", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(7);
-        assertEquals(null, list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(7);
+        assertEquals(null, list.getNextDestination(getRandomMock()));
+        
+        list.initialize();
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals("destinationTest1", list.getNextDestination(getRandomMock()));
+        
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals("destinationTest2", list.getNextDestination(getRandomMock()));
+        
+        when(getRandomMock().nextInt(anyInt())).thenReturn(4);
+        assertEquals("destinationTest2", list.getNextDestination(getRandomMock()));
+        
+        when(getRandomMock().nextInt(anyInt())).thenReturn(4);
+        assertEquals("destinationTest3", list.getNextDestination(getRandomMock()));
+        
+        when(getRandomMock().nextInt(anyInt())).thenReturn(7);
+        assertEquals(null, list.getNextDestination(getRandomMock()));
     }
     
     @Test
@@ -130,10 +136,10 @@ public class ArrowListTest {
         
         assertEquals(3, list.getNumArrows());
         
-        random.addInteger(2);
-        assertEquals("destinationTest1", list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals("destinationTest1", list.getNextDestination(getRandomMock()));
         
-        random.addInteger(2);
-        assertEquals(null, list.getNextDestination(random));
+        when(getRandomMock().nextInt(anyInt())).thenReturn(2);
+        assertEquals(null, list.getNextDestination(getRandomMock()));
     }
 }

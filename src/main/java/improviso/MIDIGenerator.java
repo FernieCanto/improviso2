@@ -114,4 +114,8 @@ public class MIDIGenerator {
         java.io.File file = new java.io.File(fileName);
         MidiSystem.write(sequence, 1, file);
     }
+
+    void setMIDITracks() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

@@ -5,39 +5,30 @@
  */
 package improviso;
 
-import improviso.mocks.*;
 import java.io.IOException;
-import java.util.Random;
+import java.util.*;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 import org.junit.*;
 import static org.junit.Assert.*;
+import org.mockito.*;
+import static org.mockito.Mockito.*;
 
 /**
  *
  * @author User
  */
 public class CompositionTest {
-    SectionMock section1;
-    SectionMock section2;
+    final private Section sectionMock1;
+    final private Section sectionMock2;
     
-    @Before
-    public void SetUp() {
-        section1 = new SectionMock("section1");
-        section1.setTempo(111);
-        section1.setTimeSignature(5, 8);
+    public CompositionTest() throws ImprovisoException {
         MIDINote[] notes1 = {
             new MIDINote(20, 0, 100, 100, 1),
             new MIDINote(25, 100, 100, 100, 1),
             new MIDINote(30, 200, 100, 100, 1),
             new MIDINote(40, 300, 100, 100, 1),
         };
-        section1.setNotes(notes1);
-        section1.setActualEnd(400);
-        
-        section2 = new SectionMock("section2");
-        section2.setTempo(222);
-        section2.setTimeSignature(11, 16);
         MIDINote[] notes2 = {
             new MIDINote(20, 0, 100, 100, 1),
             new MIDINote(25, 100, 100, 100, 1),
@@ -46,8 +37,20 @@ public class CompositionTest {
             new MIDINote(45, 400, 100, 100, 1),
             new MIDINote(50, 500, 100, 100, 1),
         };
-        section2.setNotes(notes2);
-        section2.setActualEnd(800);
+        
+        sectionMock1 = mock(Section.class);
+        when(sectionMock1.getTempo()).thenReturn(111);
+        when(sectionMock1.getTimeSignatureNumerator()).thenReturn(5);
+        when(sectionMock1.getTimeSignatureDenominator()).thenReturn(8);
+        when(sectionMock1.execute(any(Random.class))).thenReturn(new MIDINoteList(notes1));
+        when(sectionMock1.getActualEnd()).thenReturn(400);
+        
+        sectionMock2 = mock(Section.class);
+        when(sectionMock2.getTempo()).thenReturn(222);
+        when(sectionMock2.getTimeSignatureNumerator()).thenReturn(11);
+        when(sectionMock2.getTimeSignatureDenominator()).thenReturn(16);
+        when(sectionMock2.execute(any(Random.class))).thenReturn(new MIDINoteList(notes2));
+        when(sectionMock2.getActualEnd()).thenReturn(800);
     }
     
     @Test
@@ -58,7 +61,7 @@ public class CompositionTest {
     @Test(expected = ImprovisoException.class)
     public void testCreateComposition() throws ImprovisoException, InvalidMidiDataException, IOException, MidiUnavailableException {
         Composition composition = new Composition(100);
-        composition.execute(new MIDIGeneratorMock());
+        composition.execute(mock(MIDIGenerator.class));
     }
     
     @Test
@@ -79,35 +82,39 @@ public class CompositionTest {
     public void testCompositionOneSection() throws InvalidMidiDataException, ImprovisoException, IOException, MidiUnavailableException {
         Composition composition = new Composition(100);
         composition.addMIDITrack(new MIDITrack(1, 0, 100, 64));
-        composition.addSection("section1", this.section1);
+        composition.addSection("section1", this.sectionMock1);
         
-        MIDIGeneratorMock generator = new MIDIGeneratorMock();
+        MIDIGenerator generator = mock(MIDIGenerator.class);
         composition.execute(generator);
         
-        assertEquals(1, generator.getResultingMIDITracks().size());
-        assertEquals(1, generator.getResultingMIDITracks().get(0).getChannel());
-        assertEquals(0, generator.getResultingMIDITracks().get(0).getInstrument());
-        assertEquals(100, generator.getResultingMIDITracks().get(0).getVolume());
-        assertEquals(64, generator.getResultingMIDITracks().get(0).getPan());
-        assertEquals(111, (int)generator.getTempos().get(0));
-        assertEquals(5, (int)generator.getTimeSignatureNumerators().get(0));
-        assertEquals(8, (int)generator.getTimeSignatureDenominators().get(0));
-        assertEquals(100, (long)generator.getTicks().get(0));
+        ArgumentCaptor<ArrayList<MIDITrack>> argumentMIDITrackList = ArgumentCaptor.forClass(ArrayList.class);
+        verify(generator).setMIDITracks(argumentMIDITrackList.capture());
         
-        assertEquals(1, generator.getNoteLists().size());
-        assertEquals(4, generator.getNoteLists().get(0).size());
-        assertEquals(100, generator.getNoteLists().get(0).get(0).getStart());
-        assertEquals(200, generator.getNoteLists().get(0).get(1).getStart());
-        assertEquals(300, generator.getNoteLists().get(0).get(2).getStart());
-        assertEquals(400, generator.getNoteLists().get(0).get(3).getStart());
+        assertEquals(1, argumentMIDITrackList.getValue().size());
+        assertEquals(1, argumentMIDITrackList.getValue().get(0).getChannel());
+        assertEquals(0, argumentMIDITrackList.getValue().get(0).getInstrument());
+        assertEquals(100, argumentMIDITrackList.getValue().get(0).getVolume());
+        assertEquals(64, argumentMIDITrackList.getValue().get(0).getPan());
+        
+        verify(generator).setCurrentTick(100);
+        verify(generator).setTempo(111);
+        verify(generator).setTimeSignature(5, 8);
+        ArgumentCaptor<MIDINoteList> argumentNotes = ArgumentCaptor.forClass(MIDINoteList.class);
+        verify(generator).addNotes(argumentNotes.capture());
+        
+        assertEquals(4, argumentNotes.getValue().size());
+        assertEquals(100, argumentNotes.getValue().get(0).getStart());
+        assertEquals(200, argumentNotes.getValue().get(1).getStart());
+        assertEquals(300, argumentNotes.getValue().get(2).getStart());
+        assertEquals(400, argumentNotes.getValue().get(3).getStart());
     }
     
     @Test
     public void testCompositionTwoSections() throws ImprovisoException, InvalidMidiDataException, IOException, MidiUnavailableException {
         Composition composition = new Composition(100);
         composition.addMIDITrack(new MIDITrack(1, 0, 100, 64));
-        composition.addSection("section2", this.section2);
-        composition.addSection("section1", this.section1);
+        composition.addSection("section2", this.sectionMock2);
+        composition.addSection("section1", this.sectionMock1);
         
         composition.addArrow(null, new Arrow.ArrowBuilder()
                 .setDestinationSection("section1")
@@ -125,45 +132,45 @@ public class CompositionTest {
                 .build()
         );
         
-        MIDIGeneratorMock generator = new MIDIGeneratorMock();
+        MIDIGenerator generator = mock(MIDIGenerator.class);
         composition.execute(generator);
         
-        assertEquals(1, generator.getResultingMIDITracks().size());
-        assertEquals(111, (int)generator.getTempos().get(0));
-        assertEquals(222, (int)generator.getTempos().get(1));
-        assertEquals(111, (int)generator.getTempos().get(2));
+        InOrder generatorInOrder = inOrder(generator);
         
-        assertEquals(5, (int)generator.getTimeSignatureNumerators().get(0));
-        assertEquals(8, (int)generator.getTimeSignatureDenominators().get(0));
-        assertEquals(11, (int)generator.getTimeSignatureNumerators().get(1));
-        assertEquals(16, (int)generator.getTimeSignatureDenominators().get(1));
-        assertEquals(5, (int)generator.getTimeSignatureNumerators().get(2));
-        assertEquals(8, (int)generator.getTimeSignatureDenominators().get(2));
-                
-        assertEquals(100, (long)generator.getTicks().get(0));
-        assertEquals(500, (long)generator.getTicks().get(1));
-        assertEquals(1300, (long)generator.getTicks().get(2));
+        ArgumentCaptor<MIDINoteList> argumentNotes1 = ArgumentCaptor.forClass(MIDINoteList.class);
+        ArgumentCaptor<MIDINoteList> argumentNotes2 = ArgumentCaptor.forClass(MIDINoteList.class);
+        ArgumentCaptor<MIDINoteList> argumentNotes3 = ArgumentCaptor.forClass(MIDINoteList.class);
         
-        assertEquals(3, generator.getNoteLists().size());
-        assertEquals(4, generator.getNoteLists().get(0).size());
-        assertEquals(6, generator.getNoteLists().get(1).size());
-        assertEquals(4, generator.getNoteLists().get(2).size());
+        generatorInOrder.verify(generator).setCurrentTick(100);
+        generatorInOrder.verify(generator).setTempo(111);
+        generatorInOrder.verify(generator).setTimeSignature(5, 8);
+        generatorInOrder.verify(generator).addNotes(argumentNotes1.capture());
         
-        assertEquals(100, generator.getNoteLists().get(0).get(0).getStart());
-        assertEquals(200, generator.getNoteLists().get(0).get(1).getStart());
-        assertEquals(300, generator.getNoteLists().get(0).get(2).getStart());
-        assertEquals(400, generator.getNoteLists().get(0).get(3).getStart());
+        assertEquals(100, argumentNotes1.getValue().get(0).getStart());
+        assertEquals(200, argumentNotes1.getValue().get(1).getStart());
+        assertEquals(300, argumentNotes1.getValue().get(2).getStart());
+        assertEquals(400, argumentNotes1.getValue().get(3).getStart());
         
-        assertEquals(500, generator.getNoteLists().get(1).get(0).getStart());
-        assertEquals(600, generator.getNoteLists().get(1).get(1).getStart());
-        assertEquals(700, generator.getNoteLists().get(1).get(2).getStart());
-        assertEquals(800, generator.getNoteLists().get(1).get(3).getStart());
-        assertEquals(900, generator.getNoteLists().get(1).get(4).getStart());
-        assertEquals(1000, generator.getNoteLists().get(1).get(5).getStart());
+        generatorInOrder.verify(generator).setCurrentTick(500);
+        generatorInOrder.verify(generator).setTempo(222);
+        generatorInOrder.verify(generator).setTimeSignature(11, 16);
+        generatorInOrder.verify(generator).addNotes(argumentNotes2.capture());
         
-        assertEquals(1300, generator.getNoteLists().get(2).get(0).getStart());
-        assertEquals(1400, generator.getNoteLists().get(2).get(1).getStart());
-        assertEquals(1500, generator.getNoteLists().get(2).get(2).getStart());
-        assertEquals(1600, generator.getNoteLists().get(2).get(3).getStart());
+        assertEquals(500, argumentNotes2.getValue().get(0).getStart());
+        assertEquals(600, argumentNotes2.getValue().get(1).getStart());
+        assertEquals(700, argumentNotes2.getValue().get(2).getStart());
+        assertEquals(800, argumentNotes2.getValue().get(3).getStart());
+        assertEquals(900, argumentNotes2.getValue().get(4).getStart());
+        assertEquals(1000, argumentNotes2.getValue().get(5).getStart());
+        
+        generatorInOrder.verify(generator).setCurrentTick(1300);
+        generatorInOrder.verify(generator).setTempo(111);
+        generatorInOrder.verify(generator).setTimeSignature(5, 8);
+        generatorInOrder.verify(generator).addNotes(argumentNotes3.capture());
+        
+        assertEquals(1300, argumentNotes3.getValue().get(0).getStart());
+        assertEquals(1400, argumentNotes3.getValue().get(1).getStart());
+        assertEquals(1500, argumentNotes3.getValue().get(2).getStart());
+        assertEquals(1600, argumentNotes3.getValue().get(3).getStart());
     }
 }

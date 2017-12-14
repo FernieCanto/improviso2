@@ -160,7 +160,7 @@ public class Composition implements java.io.Serializable {
 
         do {
             currentSection = sections.get(currentSectionId);
-
+            
             generator.setCurrentTick(currentPosition);
             generator.setTempo(currentSection.getTempo());
             generator.setTimeSignature(currentSection.getTimeSignatureNumerator(), currentSection.getTimeSignatureDenominator());

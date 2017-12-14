@@ -5,33 +5,28 @@
  */
 package improviso;
 
-import improviso.mocks.*;
+import improviso.mocks.GroupSignalMock;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import static org.mockito.Mockito.*;
 
 /**
  *
  * @author User
  */
-public class RepetitionGroupTest {
+public class RepetitionGroupTest extends ImprovisoTest {
     private Pattern pattern1;
     private Pattern pattern2;
         
     @Before
     public void setUp() {
-        PatternMock.PatternMockBuilder patternBuilder1 = new PatternMock.PatternMockBuilder();
-        PatternMock.PatternMockBuilder patternBuilder2 = new PatternMock.PatternMockBuilder();
-        
-        patternBuilder1.setId("pattern1").setDuration(new IntegerRangeMock(100));
-        pattern1 = patternBuilder1.build();
-        patternBuilder2.setId("pattern2").setDuration(new IntegerRangeMock(100));
-        pattern2 = patternBuilder2.build();
+        pattern1 = mock(Pattern.class);
+        pattern2 = mock(Pattern.class);
     }
     
     @Test
     public void testSequenceGroupSignals() {
-        RandomMock random = new RandomMock();
         LeafGroup leafGroup1;
         LeafGroup leafGroup2;
         GroupSignalMock signalMockFinished1 = new GroupSignalMock();
@@ -62,19 +57,19 @@ public class RepetitionGroupTest {
         signalMockFinished2.setNextResult(true);
         
         GroupMessage message;
-        seqGroup.execute(random);
+        seqGroup.execute(getRandomMock());
         message = seqGroup.getMessage();
         assertFalse(message.getFinished());
         assertFalse(message.getInterrupt());
         
         signalMockInterrupt1.setNextResult(true);
         
-        seqGroup.execute(random);
+        seqGroup.execute(getRandomMock());
         message = seqGroup.getMessage();
         assertTrue(message.getFinished());
         assertFalse(message.getInterrupt());
         
-        seqGroup.execute(random);
+        seqGroup.execute(getRandomMock());
         message = seqGroup.getMessage();
         assertFalse(message.getFinished());
         assertTrue(message.getInterrupt());

@@ -66,6 +66,13 @@ public class Arrow {
         this.endCompositionAfterMax = builder.getEndCompositionAfterMax();
     }
     
+    public Arrow(Arrow arrowClone) {
+        this.destinationSection = arrowClone.getDestination();
+        this.probability = arrowClone.getProbability();
+        this.maxExecutions = arrowClone.getMaxExecutions();
+        this.endCompositionAfterMax = arrowClone.getEndCompositionAfterMax();
+    }
+    
     public void initialize() {
         this.executions = 0;
     }
@@ -76,6 +83,14 @@ public class Arrow {
     
     public int getProbability() {
         return probability;
+    }
+    
+    public int getMaxExecutions() {
+        return maxExecutions;
+    }
+    
+    public boolean getEndCompositionAfterMax() {
+        return endCompositionAfterMax;
     }
     
     public String execute() {

@@ -49,7 +49,10 @@ public class ArrowList {
     }
     
     public void initialize() {
-        this.currentArrows = (ArrayList<Arrow>)this.originalArrows.clone();
+        this.currentArrows = new ArrayList<>();
+        this.originalArrows.forEach((originalArrow) -> {
+            this.currentArrows.add(new Arrow(originalArrow));
+        });
         calculateProbabilities();
         this.currentArrows.forEach((arrow) -> {arrow.initialize();});
     }
@@ -59,7 +62,7 @@ public class ArrowList {
             return null;
         }
         
-        Arrow selectedArrow = this.selectArrow(random.nextInt());
+        Arrow selectedArrow = this.selectArrow(random.nextInt(maxProbabilities));
         String destination = selectedArrow.execute();
         if(!selectedArrow.isActive()) {
             currentArrows.remove(selectedArrow);

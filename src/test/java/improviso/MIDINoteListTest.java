@@ -1,32 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package improviso;
 
-import improviso.mocks.*;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author User
- */
 public class MIDINoteListTest {
     @Test
-    public void testCreateEmptyMIDINoteList() {
+    public void testInsertNotesMIDINoteList() {
         MIDINoteList list = new MIDINoteList();
         assertTrue(list.isEmpty());
-    }
-    
-    @Test
-    public void testInsertNotesMIDINoteList() {
+        
         MIDINote note1 = new MIDINote(10, 0, 60, 100, 0);
         MIDINote note2 = new MIDINote(11, 60, 60, 100, 0);
         MIDINote note3 = new MIDINote(12, 120, 60, 100, 0);
         
-        MIDINoteList list = new MIDINoteList();
         list.add(note1);
         list.add(note2);
         list.add(note3);
