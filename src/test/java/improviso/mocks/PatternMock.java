@@ -9,7 +9,7 @@ import java.util.Random;
  * @author User
  */
 public class PatternMock extends Pattern {
-    private ArrayList<NoteMock> notes = new ArrayList<>();
+    private ArrayList<Note> notes = new ArrayList<>();
     private Integer nextDuration;
     private int executions = 0;
     
@@ -56,11 +56,11 @@ public class PatternMock extends Pattern {
         this.executions = 0;
     }
     
-    public void setNotes(ArrayList<NoteMock> list) {
+    public void setNotes(ArrayList<Note> list) {
         this.notes = list;
     }
     
-    public ArrayList<NoteMock> getNotes() {
+    public ArrayList<Note> getNotes() {
         return this.notes;
     }
     

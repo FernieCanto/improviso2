@@ -16,10 +16,25 @@ public class VariableSectionTest extends ImprovisoTest {
     private GroupMock group2;
     private GroupMock group3;
     
+    private Pattern.PatternExecution execution1;
+    private Pattern.PatternExecution execution2;
+    private Pattern.PatternExecution execution3;
+    private Group groupMock1;
+    private Group groupMock2;
+    private Group groupMock3;
+    
     @Before
     public void setUp() {
+        execution1 = getPatternExecutionMock(VariableSectionTest.PATTERN1_LENGTH);
+        execution2 = getPatternExecutionMock(VariableSectionTest.PATTERN2_LENGTH);
+        execution3 = getPatternExecutionMock(VariableSectionTest.PATTERN3_LENGTH);
+        
+        groupMock1 = getGroupMock(execution1);
+        groupMock2 = getGroupMock(execution2);
+        groupMock3 = getGroupMock(execution3);
+        
         PatternMock.PatternMockBuilder patternBuilder1 = new PatternMock.PatternMockBuilder();
-        ArrayList<NoteMock> notes1 = new ArrayList<>();
+        ArrayList<Note> notes1 = new ArrayList<>();
         notes1.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
                 new MIDINote(10, 110, 10, 10, 1)
         ).build());
@@ -33,7 +48,7 @@ public class VariableSectionTest extends ImprovisoTest {
         this.group1.setNextPattern(this.pattern1);
         
         PatternMock.PatternMockBuilder patternBuilder2 = new PatternMock.PatternMockBuilder();
-        ArrayList<NoteMock> notes2 = new ArrayList<>();
+        ArrayList<Note> notes2 = new ArrayList<>();
         notes2.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
                 new MIDINote(10, 90, 20, 10, 1)
         ).build());
@@ -50,7 +65,7 @@ public class VariableSectionTest extends ImprovisoTest {
         this.group2.setNextPattern(this.pattern2);
         
         PatternMock.PatternMockBuilder patternBuilder3 = new PatternMock.PatternMockBuilder();
-        ArrayList<NoteMock> notes3 = new ArrayList<>();
+        ArrayList<Note> notes3 = new ArrayList<>();
         notes3.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
                 new MIDINote(10, 10, 10, 10, 1)
         ).build());
@@ -75,7 +90,7 @@ public class VariableSectionTest extends ImprovisoTest {
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
-        sectionBuilder.addTrack(new TrackMock.TrackMockBuilder().setRootGroup(this.group1).build());
+        sectionBuilder.addTrack(new Track.TrackBuilder().setRootGroup(groupMock1).build());
         section = sectionBuilder.build();
         
         assertNotNull(section);

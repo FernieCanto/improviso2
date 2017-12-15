@@ -33,4 +33,21 @@ abstract public class ImprovisoTest {
         when(range.getValue(any(Random.class), anyDouble())).thenReturn(value);
         return range;
     }
+    
+    protected Pattern.PatternExecution getPatternExecutionMock(int length) {
+        Pattern.PatternExecution execution = mock(Pattern.PatternExecution.class);
+        when(execution.getLength()).thenReturn(length);
+        when(execution.execute(any(Random.class), anyDouble(), anyInt())).thenReturn(new MIDINoteList());
+        return execution;
+    }
+    
+    protected Group getGroupMock(Pattern.PatternExecution execution) {
+        Pattern pattern1 = mock(Pattern.class);
+        when(pattern1.initialize(any(Random.class))).thenReturn(execution);
+        
+        Group groupMock = mock(Group.class);
+        when(groupMock.getMessage()).thenReturn(mock(GroupMessage.class));
+        when(groupMock.execute(any(Random.class))).thenReturn(pattern1);
+        return groupMock;
+    }
 }

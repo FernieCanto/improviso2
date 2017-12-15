@@ -81,9 +81,7 @@ public class Composition implements java.io.Serializable {
      */
     public void addSection(String id, ExecutableSection section) {
         if (sections.containsKey(id)) {
-            System.out.println("Removing section " + id);
             sections.remove(id);
-            System.out.println("Replacing section " + id + " with new section " + section.toString());
             sections.put(id, section);
         } else {
             sections.put(id, section);

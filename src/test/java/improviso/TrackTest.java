@@ -76,6 +76,7 @@ public class TrackTest extends ImprovisoTest {
     
     @Test
     public void testExecuteTrackSectionEndInterrupt() {
+        // TODO: TEST MULTIPLE EXECUTIONS OF TRACK!
         Track track;
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
                 .setId("trackTest").setRootGroup(groupMock);
