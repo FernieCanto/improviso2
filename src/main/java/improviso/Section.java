@@ -154,7 +154,7 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
         
         @Override
         public boolean endIsKnown() {
-            return true;
+            return false;
         }
         
         @Override

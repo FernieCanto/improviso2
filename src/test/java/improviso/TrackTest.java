@@ -5,48 +5,46 @@
  */
 package improviso;
 
-import improviso.mocks.*;
-import java.util.ArrayList;
-import org.junit.Test;
-import org.junit.Before;
+import java.util.Random;
+import org.junit.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
  *
  * @author User
  */
-public class TrackTest {
-    PatternMock pattern1;
-    RandomMock random;
+public class TrackTest extends ImprovisoTest {
+    private Pattern pattern1;
+    private Pattern.PatternExecution execution;
+    private MIDINoteList noteList;
+    
+    private GroupMessage groupMessageMock;
+    private Group groupMock;
     
     @Before
     public void setUp() {
-        this.random = new RandomMock();
-        PatternMock.PatternMockBuilder patternBuilder = new PatternMock.PatternMockBuilder();
-        patternBuilder.setDuration(new IntegerRangeMock(150));
-        this.pattern1 = patternBuilder.build();
+        noteList = mock(MIDINoteList.class);
         
-        ArrayList<NoteMock> notes1 = new ArrayList<>();
-        notes1.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(10, 50, 50, 100, 1)
-        ).build());
-        notes1.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(10, 100, 50, 100, 1)
-        ).build());
-        this.pattern1.setNotes(notes1);
+        execution = mock(Pattern.PatternExecution.class);
+        when(execution.getLength()).thenReturn(150);
+        when(execution.execute(any(Random.class), anyDouble(), anyInt())).thenReturn(noteList);
+        
+        pattern1 = mock(Pattern.class);
+        when(pattern1.initialize(any(Random.class))).thenReturn(execution);
+        
+        groupMessageMock = mock(GroupMessage.class);
+        groupMock = mock(Group.class);
+        when(groupMock.getMessage()).thenReturn(groupMessageMock);
+        when(groupMock.execute(any(Random.class))).thenReturn(pattern1);
     }
     
     @Test
     public void testCreateTrack() {
-        GroupMock group;
-        GroupMock.GroupMockBuilder groupBuilder = new GroupMock.GroupMockBuilder();
-        groupBuilder.setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
-        group = groupBuilder.build();
-        
         Track track;
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
-                .setId("trackTest").setRootGroup(group);
+                .setId("trackTest").setRootGroup(groupMock);
         track = trackBuilder.build();
         
         assertNotNull(track);
@@ -54,68 +52,45 @@ public class TrackTest {
         
         track.initialize();
         assertEquals(0, track.getCurrentPosition());
+        verify(groupMock).resetGroup();
     }
     
     @Test
     public void testExecuteTrackNoSectionEnd() {
-        GroupMock group;
-        GroupMock.GroupMockBuilder groupBuilder = new GroupMock.GroupMockBuilder();
-        groupBuilder.setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
-        group = groupBuilder.build();
-        
         Track track;
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
-                .setId("trackTest").setRootGroup(group);
+                .setId("trackTest").setRootGroup(groupMock);
         track = trackBuilder.build();
-        
-        assertNotNull(track);
-        assertEquals("trackTest", track.getId());
-        
         track.initialize();
-        group.setNextPattern(this.pattern1);
         
-        GroupMessage message = new GroupMessage("test");
-        group.setNextMessage(message);
-        
-        this.pattern1.setNextDuration(150);
-        track.selectNextPattern(this.random);
-        assertEquals(message, track.getMessage());
+        track.selectNextPattern(getRandomMock());
+        assertNotNull(track.getCurrentExecution());
+        assertEquals(groupMessageMock, track.getMessage());
         assertEquals(150, track.getEnd());
-        assertEquals(2, this.pattern1.getNotes().size());
         
-        MIDINoteList notes = track.execute(this.random, new Section.UnknownSectionEnd(), false);
-        assertEquals(2, notes.size());
+        track.execute(getRandomMock(), new Section.UnknownSectionEnd(), false);
+        verify(execution).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE);
+        verify(noteList).offsetNotes(0);
         assertEquals(150, track.getCurrentPosition());
     }
     
     @Test
     public void testExecuteTrackSectionEndInterrupt() {
-        GroupMessage message = new GroupMessage("test");
-        GroupMock group;
-        GroupMock.GroupMockBuilder groupBuilder = new GroupMock.GroupMockBuilder();
-        groupBuilder.setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
-        group = groupBuilder.build();
-        
         Track track;
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
-                .setId("trackTest").setRootGroup(group);
+                .setId("trackTest").setRootGroup(groupMock);
         track = trackBuilder.build();
         
         track.initialize();
         
-        group.setNextPattern(this.pattern1);
-        group.setNextMessage(message);
-        
-        this.pattern1.setNextDuration(150);
-        track.selectNextPattern(this.random);
-        assertEquals(message, track.getMessage());
+        track.selectNextPattern(getRandomMock());
+        assertNotNull(track.getCurrentExecution());
+        assertEquals(groupMessageMock, track.getMessage());
         assertEquals(150, track.getEnd());
         
-        MIDINoteList notes = track.execute(this.random, Section.SectionEnd.createEnd(60), true);
-        assertEquals(1, notes.size());
-        assertEquals(10, notes.get(0).getLength());
+        track.execute(getRandomMock(), Section.SectionEnd.createEnd(60), true);
+        verify(execution).execute(getRandomMock(), 1.0, 60);
+        verify(noteList).offsetNotes(0);
         assertEquals(60, track.getCurrentPosition());
     }
 }

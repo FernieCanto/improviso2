@@ -89,6 +89,10 @@ public class Track implements java.io.Serializable {
         return this.message;
     }
     
+    public Pattern.PatternExecution getCurrentExecution() {
+        return currentExecution;
+    }
+    
     /**
      * Obtains the ending position of the currently selected Pattern.
      * @return 
@@ -144,9 +148,11 @@ public class Track implements java.io.Serializable {
     
     private double getRelativePatternPosition(Section.SectionEnd sectionEnd) {
         if (!sectionEnd.endIsKnown()) {
-            return 0.0;
-        } else {
+            return 0.0d;
+        } else if (this.getEnd() < sectionEnd.intValue()) {
             return ((double)(this.getEnd()) / (double)(sectionEnd.intValue()));
+        } else {
+            return 1.0d;
         }
     }
     

@@ -5,7 +5,7 @@
  */
 package improviso;
 
-import improviso.mocks.GroupSignalMock;
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -29,10 +29,10 @@ public class RepetitionGroupTest extends ImprovisoTest {
     public void testSequenceGroupSignals() {
         LeafGroup leafGroup1;
         LeafGroup leafGroup2;
-        GroupSignalMock signalMockFinished1 = new GroupSignalMock();
-        GroupSignalMock signalMockFinished2 = new GroupSignalMock();
-        GroupSignalMock signalMockInterrupt1 = new GroupSignalMock();
-        GroupSignalMock signalMockInterrupt2 = new GroupSignalMock();
+        GroupSignal signalMockFinished1 = mock(GroupSignal.class);
+        GroupSignal signalMockFinished2 = mock(GroupSignal.class);
+        GroupSignal signalMockInterrupt1 = mock(GroupSignal.class);
+        GroupSignal signalMockInterrupt2 = mock(GroupSignal.class);
         
         LeafGroup.LeafGroupBuilder leafBuilder1 = new LeafGroup.LeafGroupBuilder();
         leafBuilder1.setId("leafGroup1")
@@ -49,29 +49,25 @@ public class RepetitionGroupTest extends ImprovisoTest {
         SequenceGroup.SequenceGroupBuilder seqBuilder = new SequenceGroup.SequenceGroupBuilder();
         SequenceGroup seqGroup;
         seqBuilder.setId("seqGroup")
-                .setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
+                .setFinishedSignal(mock(GroupSignal.class))
+                .setInterruptSignal(mock(GroupSignal.class));
         seqBuilder.addChild(leafGroup1, null, null).addChild(leafGroup2, null, null);
         seqGroup = seqBuilder.build();
         
-        signalMockFinished2.setNextResult(true);
-        
-        GroupMessage message;
-        seqGroup.execute(getRandomMock());
-        message = seqGroup.getMessage();
-        assertFalse(message.getFinished());
-        assertFalse(message.getInterrupt());
-        
-        signalMockInterrupt1.setNextResult(true);
+        when(signalMockFinished2.signal(anyInt(), any(Random.class))).thenReturn(true);
         
         seqGroup.execute(getRandomMock());
-        message = seqGroup.getMessage();
-        assertTrue(message.getFinished());
-        assertFalse(message.getInterrupt());
+        assertFalse(seqGroup.getMessage().getFinished());
+        assertFalse(seqGroup.getMessage().getInterrupt());
+        
+        when(signalMockInterrupt1.signal(anyInt(), any(Random.class))).thenReturn(true);
         
         seqGroup.execute(getRandomMock());
-        message = seqGroup.getMessage();
-        assertFalse(message.getFinished());
-        assertTrue(message.getInterrupt());
+        assertTrue(seqGroup.getMessage().getFinished());
+        assertFalse(seqGroup.getMessage().getInterrupt());
+        
+        seqGroup.execute(getRandomMock());
+        assertFalse(seqGroup.getMessage().getFinished());
+        assertTrue(seqGroup.getMessage().getInterrupt());
     }
 }

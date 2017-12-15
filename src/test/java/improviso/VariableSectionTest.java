@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package improviso;
 
 import improviso.mocks.*;
@@ -10,15 +5,10 @@ import java.util.ArrayList;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author User
- */
-public class VariableSectionTest {
+public class VariableSectionTest extends ImprovisoTest {
     private static final int PATTERN1_LENGTH = 200;
     private static final int PATTERN2_LENGTH = 300;
     private static final int PATTERN3_LENGTH = 700;
-    private RandomMock random;
     private PatternMock pattern1;
     private PatternMock pattern2;
     private PatternMock pattern3;
@@ -28,7 +18,6 @@ public class VariableSectionTest {
     
     @Before
     public void setUp() {
-        this.random = new RandomMock();
         PatternMock.PatternMockBuilder patternBuilder1 = new PatternMock.PatternMockBuilder();
         ArrayList<NoteMock> notes1 = new ArrayList<>();
         notes1.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
@@ -108,7 +97,7 @@ public class VariableSectionTest {
         track1.addPositionFinished(600);
         
         this.pattern1.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600
         assertEquals(600, section.getActualEnd());
@@ -135,7 +124,7 @@ public class VariableSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600!
         assertEquals(2, this.pattern2.getExecutions()); // 300 - 600!
@@ -166,7 +155,7 @@ public class VariableSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(4, this.pattern1.getExecutions()); // 200 - 400! - 600 - 800
         assertEquals(3, this.pattern2.getExecutions()); // 300 - 600! - 900
@@ -189,7 +178,7 @@ public class VariableSectionTest {
         track1.addPositionInterrupt(600);
         
         this.pattern1.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600!!
         assertEquals(600, section.getActualEnd());
@@ -213,7 +202,7 @@ public class VariableSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(4, this.pattern1.getExecutions()); // 200 - 400 - 600 - 800!!
         assertEquals(3, this.pattern2.getExecutions()); // 300 - 600 - 900
@@ -245,7 +234,7 @@ public class VariableSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(4, this.pattern1.getExecutions()); // 200 - 400! - 600 - 700
         assertEquals(3, this.pattern2.getExecutions()); // 300 - 600! - 700
@@ -273,7 +262,7 @@ public class VariableSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(4, this.pattern1.getExecutions()); // 200 - 400 - 600 - 800!!
         assertEquals(3, this.pattern2.getExecutions()); // 300 - 600 - 800

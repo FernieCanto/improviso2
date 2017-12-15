@@ -14,10 +14,9 @@ import static org.junit.Assert.*;
  *
  * @author User
  */
-public class FixedSectionTest {
+public class FixedSectionTest extends ImprovisoTest {
     private static final int PATTERN1_LENGTH = 200;
     private static final int PATTERN2_LENGTH = 300;
-    private RandomMock random;
     private PatternMock pattern1;
     private PatternMock pattern2;
     private GroupMock group1;
@@ -25,7 +24,6 @@ public class FixedSectionTest {
             
     @Before
     public void setUp() {
-        this.random = new RandomMock();
         PatternMock.PatternMockBuilder patternBuilder1 = new PatternMock.PatternMockBuilder();
         ArrayList<NoteMock> notes1 = new ArrayList<>();
         notes1.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
@@ -79,7 +77,7 @@ public class FixedSectionTest {
         FixedSection.FixedSectionBuilder sectionBuilder = new FixedSection.FixedSectionBuilder();
         sectionBuilder.setLength(new IntegerRangeMock(500)).setId("sectionTest").setTempo(100);
         section = sectionBuilder.build();
-        section.execute(this.random);
+        section.execute(getRandomMock());
     }
     
     @Test
@@ -92,7 +90,7 @@ public class FixedSectionTest {
         assertEquals(1, section.getTracks().size());
         
         this.pattern1.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600
         assertEquals(600, section.getActualEnd());
@@ -111,7 +109,7 @@ public class FixedSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600
         assertEquals(2, this.pattern2.getExecutions()); // 300 - 600
@@ -129,7 +127,7 @@ public class FixedSectionTest {
         section = sectionBuilder.build();
         
         this.pattern1.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 500
         assertEquals(500, section.getActualEnd());
@@ -148,7 +146,7 @@ public class FixedSectionTest {
         
         this.pattern1.resetExecutions();
         this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(this.random);
+        MIDINoteList notes = section.execute(getRandomMock());
         
         assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 500
         assertEquals(2, this.pattern2.getExecutions()); // 300 - 500

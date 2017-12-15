@@ -45,7 +45,7 @@ public class PatternTest extends ImprovisoTest {
         
         Pattern pattern = new Pattern.PatternBuilder()
                 .setId("pattern1")
-                .setDuration(new improviso.mocks.IntegerRangeMock(100))
+                .setDuration(getIntegerRangeMock(100))
                 .addNote(note1)
                 .addNote(note2)
                 .build();

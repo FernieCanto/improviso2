@@ -5,19 +5,15 @@
  */
 package improviso;
 
-import improviso.mocks.GroupSignalMock;
-import improviso.mocks.RandomMock;
-import org.junit.After;
+import org.junit.*;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
 import static org.mockito.Mockito.*;
 
 /**
  *
  * @author User
  */
-public class SequenceGroupTest {
+public class SequenceGroupTest extends ImprovisoTest {
     private Pattern pattern1;
     private Pattern pattern2;
     private LeafGroup leafGroup1;
@@ -32,12 +28,12 @@ public class SequenceGroupTest {
         LeafGroup.LeafGroupBuilder leafBuilder2 = new LeafGroup.LeafGroupBuilder();
         
         leafBuilder1.setId("leafGroup1")
-                .setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
+                .setFinishedSignal(mock(GroupSignal.class))
+                .setInterruptSignal(mock(GroupSignal.class));
         this.leafGroup1 = leafBuilder1.setLeafPattern(this.pattern1).build();
         leafBuilder2.setId("leafGroup2")
-                .setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
+                .setFinishedSignal(mock(GroupSignal.class))
+                .setInterruptSignal(mock(GroupSignal.class));
         this.leafGroup2 = leafBuilder2.setLeafPattern(this.pattern2).build();
     }
     
@@ -54,12 +50,11 @@ public class SequenceGroupTest {
      */
     @Test
     public void testBuildSequenceGroup() {
-        RandomMock random = new RandomMock();
         SequenceGroup.SequenceGroupBuilder seqBuilder = new SequenceGroup.SequenceGroupBuilder();
         SequenceGroup seqGroup;
         seqBuilder.setId("seqGroup")
-                .setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
+                .setFinishedSignal(mock(GroupSignal.class))
+                .setInterruptSignal(mock(GroupSignal.class));
         seqBuilder.addChild(this.leafGroup1, null, null).addChild(this.leafGroup2, null, null);
         seqGroup = seqBuilder.build();
         
@@ -67,9 +62,9 @@ public class SequenceGroupTest {
         assertEquals(2, seqGroup.getChildren().size());
         assertTrue(seqGroup.getChildren().contains(this.leafGroup1));
         assertTrue(seqGroup.getChildren().contains(this.leafGroup2));
-        assertEquals(this.pattern1, seqGroup.execute(random));
-        assertEquals(this.pattern2, seqGroup.execute(random));
-        assertEquals(this.pattern1, seqGroup.execute(random));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
     }
     
     /**
@@ -77,22 +72,21 @@ public class SequenceGroupTest {
      */
     @Test
     public void testSequenceGroupRepetitions() {
-        RandomMock random = new RandomMock();
         SequenceGroup.SequenceGroupBuilder seqBuilder = new SequenceGroup.SequenceGroupBuilder();
         SequenceGroup seqGroup;
         seqBuilder.setId("seqGroupRepet")
-                .setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
+                .setFinishedSignal(mock(GroupSignal.class))
+                .setInterruptSignal(mock(GroupSignal.class));
         seqBuilder.addChild(this.leafGroup1, 2, null).addChild(this.leafGroup2, 3, null);
         seqGroup = seqBuilder.build();
         
-        assertEquals(this.pattern1, seqGroup.execute(random));
-        assertEquals(this.pattern1, seqGroup.execute(random));
-        assertEquals(this.pattern2, seqGroup.execute(random));
-        assertEquals(this.pattern2, seqGroup.execute(random));
-        assertEquals(this.pattern2, seqGroup.execute(random));
-        assertEquals(this.pattern1, seqGroup.execute(random));
-        assertEquals(this.pattern1, seqGroup.execute(random));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
     }
     
     /**
@@ -100,30 +94,29 @@ public class SequenceGroupTest {
      */
     @Test
     public void testSequenceGroupInertia() {
-        RandomMock random = new RandomMock();
         SequenceGroup.SequenceGroupBuilder seqBuilder = new SequenceGroup.SequenceGroupBuilder();
         SequenceGroup seqGroup;
         seqBuilder.setId("seqGroupInert")
-                .setFinishedSignal(new GroupSignalMock())
-                .setInterruptSignal(new GroupSignalMock());
+                .setFinishedSignal(mock(GroupSignal.class))
+                .setInterruptSignal(mock(GroupSignal.class));
         seqBuilder.addChild(this.leafGroup1, 0, 0.3).addChild(this.leafGroup2, 0, 0.8);
         seqGroup = seqBuilder.build();
         
-        assertEquals(this.pattern1, seqGroup.execute(random));
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
         
-        random.addDouble(0.21);
-        assertEquals(this.pattern1, seqGroup.execute(random));
+        when(getRandomMock().nextDouble()).thenReturn(0.21);
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
         
-        random.addDouble(0.32);
-        assertEquals(this.pattern2, seqGroup.execute(random));
+        when(getRandomMock().nextDouble()).thenReturn(0.31);
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
         
-        random.addDouble(0.63);
-        assertEquals(this.pattern2, seqGroup.execute(random));
+        when(getRandomMock().nextDouble()).thenReturn(0.63);
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
         
-        random.addDouble(0.75);
-        assertEquals(this.pattern2, seqGroup.execute(random));
+        when(getRandomMock().nextDouble()).thenReturn(0.75);
+        assertEquals(this.pattern2, seqGroup.execute(getRandomMock()));
         
-        random.addDouble(0.85);
-        assertEquals(this.pattern1, seqGroup.execute(random));
+        when(getRandomMock().nextDouble()).thenReturn(0.85);
+        assertEquals(this.pattern1, seqGroup.execute(getRandomMock()));
     }
 }
