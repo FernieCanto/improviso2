@@ -38,8 +38,8 @@ public class LeafGroup extends Group {
     }
     
     @Override
-    protected Pattern selectPattern(Random rand) {
-        return this.leafPattern;
+    protected Pattern.PatternExecution selectPattern(Random rand) {
+        return this.leafPattern.getNextExecution(rand);
     }
     
     @Override

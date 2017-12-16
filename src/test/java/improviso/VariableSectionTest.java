@@ -1,20 +1,13 @@
 package improviso;
 
-import improviso.mocks.*;
-import java.util.ArrayList;
 import org.junit.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class VariableSectionTest extends ImprovisoTest {
     private static final int PATTERN1_LENGTH = 200;
     private static final int PATTERN2_LENGTH = 300;
     private static final int PATTERN3_LENGTH = 700;
-    private PatternMock pattern1;
-    private PatternMock pattern2;
-    private PatternMock pattern3;
-    private GroupMock group1;
-    private GroupMock group2;
-    private GroupMock group3;
     
     private Pattern.PatternExecution execution1;
     private Pattern.PatternExecution execution2;
@@ -22,6 +15,9 @@ public class VariableSectionTest extends ImprovisoTest {
     private Group groupMock1;
     private Group groupMock2;
     private Group groupMock3;
+    private GroupMessage message1;
+    private GroupMessage message2;
+    private GroupMessage message3;
     
     @Before
     public void setUp() {
@@ -29,60 +25,12 @@ public class VariableSectionTest extends ImprovisoTest {
         execution2 = getPatternExecutionMock(VariableSectionTest.PATTERN2_LENGTH);
         execution3 = getPatternExecutionMock(VariableSectionTest.PATTERN3_LENGTH);
         
-        groupMock1 = getGroupMock(execution1);
-        groupMock2 = getGroupMock(execution2);
-        groupMock3 = getGroupMock(execution3);
-        
-        PatternMock.PatternMockBuilder patternBuilder1 = new PatternMock.PatternMockBuilder();
-        ArrayList<Note> notes1 = new ArrayList<>();
-        notes1.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(10, 110, 10, 10, 1)
-        ).build());
-        this.pattern1 = patternBuilder1.build();
-        this.pattern1.setNextDuration(VariableSectionTest.PATTERN1_LENGTH);
-        this.pattern1.setNotes(notes1);
-        
-        GroupMock.GroupMockBuilder groupBuilder1 = new GroupMock.GroupMockBuilder();
-        this.group1 = groupBuilder1.build();
-        this.group1.setNextMessage(new GroupMessage("test1"));
-        this.group1.setNextPattern(this.pattern1);
-        
-        PatternMock.PatternMockBuilder patternBuilder2 = new PatternMock.PatternMockBuilder();
-        ArrayList<Note> notes2 = new ArrayList<>();
-        notes2.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(10, 90, 20, 10, 1)
-        ).build());
-        notes2.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(20, 250, 20, 20, 1)
-        ).build());
-        this.pattern2 = patternBuilder2.build();
-        this.pattern2.setNextDuration(VariableSectionTest.PATTERN2_LENGTH);
-        this.pattern2.setNotes(notes2);
-        
-        GroupMock.GroupMockBuilder groupBuilder2 = new GroupMock.GroupMockBuilder();
-        this.group2 = groupBuilder2.build();
-        this.group2.setNextMessage(new GroupMessage("test2"));
-        this.group2.setNextPattern(this.pattern2);
-        
-        PatternMock.PatternMockBuilder patternBuilder3 = new PatternMock.PatternMockBuilder();
-        ArrayList<Note> notes3 = new ArrayList<>();
-        notes3.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(10, 10, 10, 10, 1)
-        ).build());
-        notes3.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(20, 20, 20, 20, 1)
-        ).build());
-        notes3.add((NoteMock) new NoteMock.NoteMockBuilder().setNote(
-                new MIDINote(30, 30, 30, 30, 1)
-        ).build());
-        this.pattern3 = patternBuilder3.build();
-        this.pattern3.setNextDuration(VariableSectionTest.PATTERN3_LENGTH);
-        this.pattern3.setNotes(notes3);
-        
-        GroupMock.GroupMockBuilder groupBuilder3 = new GroupMock.GroupMockBuilder();
-        this.group3 = groupBuilder3.build();
-        this.group3.setNextMessage(new GroupMessage("test3"));
-        this.group3.setNextPattern(this.pattern3);
+        message1 = mock(GroupMessage.class);
+        message2 = mock(GroupMessage.class);
+        message3 = mock(GroupMessage.class);
+        groupMock1 = getGroupMock(execution1, message1);
+        groupMock2 = getGroupMock(execution2, message2);
+        groupMock3 = getGroupMock(execution3, message3);
     }
     
     @Test
@@ -100,29 +48,25 @@ public class VariableSectionTest extends ImprovisoTest {
     
     @Test
     public void testExecuteVariableSectionOneTrackFinished() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setRootGroup(this.group1).build();
+        Track track1 = new Track.TrackBuilder().setRootGroup(groupMock1).build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
         sectionBuilder.addTrack(track1);
         section = sectionBuilder.build();
         
-        track1.addPositionFinished(null);
-        track1.addPositionFinished(null);
-        track1.addPositionFinished(600);
+        when(message1.getFinished()).thenReturn(false, false, true);
         
-        this.pattern1.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
+        section.execute(getRandomMock());
         
-        assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600
+        verify(execution1, times(3)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400 - 600!
         assertEquals(600, section.getActualEnd());
-        assertEquals(3, notes.size());
     }
     
     @Test
     public void testExecuteVariableSectionTwoTracksFinished() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track1").setRootGroup(this.group1).build();
-        TrackMock track2 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track2").setRootGroup(this.group2).build();
+        Track track1 = new Track.TrackBuilder().setId("track1").setRootGroup(groupMock1).build();
+        Track track2 = new Track.TrackBuilder().setId("track2").setRootGroup(groupMock2).build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
@@ -130,28 +74,21 @@ public class VariableSectionTest extends ImprovisoTest {
         sectionBuilder.addTrack(track2);
         section = sectionBuilder.build();
         
-        track1.addPositionFinished(null);
-        track1.addPositionFinished(null);
-        track1.addPositionFinished(600);
+        when(message1.getFinished()).thenReturn(false, false, true);
+        when(message2.getFinished()).thenReturn(false, true);
         
-        track2.addPositionFinished(null);
-        track2.addPositionFinished(600);
+        section.execute(getRandomMock());
         
-        this.pattern1.resetExecutions();
-        this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
-        
-        assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600!
-        assertEquals(2, this.pattern2.getExecutions()); // 300 - 600!
+        verify(execution1, times(3)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400 - 600!
+        verify(execution2, times(2)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 300 - 600!
         assertEquals(600, section.getActualEnd());
-        assertEquals(7, notes.size());
     }
     
     @Test
     public void testExecuteVariableSectionThreeTracksFinished() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track1").setRootGroup(this.group1).build();
-        TrackMock track2 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track2").setRootGroup(this.group2).build();
-        TrackMock track3 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track3").setRootGroup(this.group3).build();
+        Track track1 = new Track.TrackBuilder().setId("track1").setRootGroup(groupMock1).build();
+        Track track2 = new Track.TrackBuilder().setId("track2").setRootGroup(groupMock2).build();
+        Track track3 = new Track.TrackBuilder().setId("track3").setRootGroup(groupMock3).build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
@@ -160,76 +97,62 @@ public class VariableSectionTest extends ImprovisoTest {
         sectionBuilder.addTrack(track3);
         section = sectionBuilder.build();
         
-        track1.addPositionFinished(null);
-        track1.addPositionFinished(400);
+        when(message1.getFinished()).thenReturn(false, true);
+        when(message2.getFinished()).thenReturn(false, true);
+        when(message3.getFinished()).thenReturn(true);
         
-        track2.addPositionFinished(null);
-        track2.addPositionFinished(600);
+        section.execute(getRandomMock());
         
-        track3.addPositionFinished(700);
-        
-        this.pattern1.resetExecutions();
-        this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
-        
-        assertEquals(4, this.pattern1.getExecutions()); // 200 - 400! - 600 - 800
-        assertEquals(3, this.pattern2.getExecutions()); // 300 - 600! - 900
-        assertEquals(1, this.pattern3.getExecutions()); // 700!
+        // TODO: SHOULDN'T HAPPEN!!
+        verify(execution1, times(4)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400! - 600 - 800
+        verify(execution2, times(3)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 300 - 600! - 900
+        verify(execution3, times(1)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 700!
         assertEquals(900, section.getActualEnd());
-        assertEquals(13, notes.size());
     }
     
     @Test
     public void testExecuteVariableSectionOneTrackInterrupt() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setRootGroup(this.group1).setId("interruptTrack").build();
+        Track track1 = new Track.TrackBuilder().setRootGroup(groupMock1).setId("interruptTrack").build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
         sectionBuilder.addTrack(track1);
         section = sectionBuilder.build();
         
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(600);
+        when(message1.getInterrupt()).thenReturn(false, false, true);
         
-        this.pattern1.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
+        section.execute(getRandomMock());
         
-        assertEquals(3, this.pattern1.getExecutions()); // 200 - 400 - 600!!
+        verify(execution1, times(3)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400 - 600!
         assertEquals(600, section.getActualEnd());
-        assertEquals(3, notes.size());
     }
     
     @Test
     public void testExecuteVariableSectionTwoTracksInterrupt() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setRootGroup(this.group1).build();
-        TrackMock track2 = (TrackMock) new TrackMock.TrackMockBuilder().setRootGroup(this.group2).build();
+        Track track1 = new Track.TrackBuilder().setRootGroup(groupMock1).build();
+        Track track2 = new Track.TrackBuilder().setRootGroup(groupMock2).build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
         sectionBuilder.addTrack(track1);
         sectionBuilder.addTrack(track2);
         section = sectionBuilder.build();
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(800);
         
-        this.pattern1.resetExecutions();
-        this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
+        when(message1.getInterrupt()).thenReturn(false, false, false, true);
         
-        assertEquals(4, this.pattern1.getExecutions()); // 200 - 400 - 600 - 800!!
-        assertEquals(3, this.pattern2.getExecutions()); // 300 - 600 - 900
+        section.execute(getRandomMock());
+        
+        // TODO: SHOULDN'T HAPPEN
+        verify(execution1, times(4)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400 - 600 - 800!!
+        verify(execution2, times(3)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 300 - 600 - 900
         assertEquals(900, section.getActualEnd());
-        assertEquals(10, notes.size());
     }
     
     @Test
     public void testExecuteVariableSectionThreeTracksFinishedCutSection() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track1").setRootGroup(this.group1).build();
-        TrackMock track2 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track2").setRootGroup(this.group2).build();
-        TrackMock track3 = (TrackMock) new TrackMock.TrackMockBuilder().setId("track3").setRootGroup(this.group3).build();
+        Track track1 = new Track.TrackBuilder().setId("track1").setRootGroup(groupMock1).build();
+        Track track2 = new Track.TrackBuilder().setId("track2").setRootGroup(groupMock2).build();
+        Track track3 = new Track.TrackBuilder().setId("track3").setRootGroup(groupMock3).build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
@@ -239,29 +162,24 @@ public class VariableSectionTest extends ImprovisoTest {
         sectionBuilder.setInterruptTracks(true);
         section = sectionBuilder.build();
         
-        track1.addPositionFinished(null);
-        track1.addPositionFinished(400);
+        when(message1.getFinished()).thenReturn(false, true);
+        when(message2.getFinished()).thenReturn(false, true);
+        when(message3.getFinished()).thenReturn(true);
         
-        track2.addPositionFinished(null);
-        track2.addPositionFinished(600);
+        section.execute(getRandomMock());
         
-        track3.addPositionFinished(700);
-        
-        this.pattern1.resetExecutions();
-        this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
-        
-        assertEquals(4, this.pattern1.getExecutions()); // 200 - 400! - 600 - 700
-        assertEquals(3, this.pattern2.getExecutions()); // 300 - 600! - 700
-        assertEquals(1, this.pattern3.getExecutions()); // 700!
+        verify(execution1, times(3)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400! - 600
+        verify(execution1, times(1)).execute(getRandomMock(), 0.0d, 100); // - 700
+        verify(execution2, times(2)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 300 - 600!
+        verify(execution2, times(1)).execute(getRandomMock(), 0.0d, 100); //  - 900
+        verify(execution3, times(1)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 700!
         assertEquals(700, section.getActualEnd());
-        assertEquals(11, notes.size());
     }
     
     @Test
     public void testExecuteVariableSectionTwoTracksInterruptCutSection() throws ImprovisoException {
-        TrackMock track1 = (TrackMock) new TrackMock.TrackMockBuilder().setRootGroup(this.group1).build();
-        TrackMock track2 = (TrackMock) new TrackMock.TrackMockBuilder().setRootGroup(this.group2).build();
+        Track track1 = new Track.TrackBuilder().setRootGroup(groupMock1).build();
+        Track track2 = new Track.TrackBuilder().setRootGroup(groupMock2).build();
         VariableSection section;
         VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
         sectionBuilder.setId("sectionTest").setTempo(100);
@@ -270,18 +188,13 @@ public class VariableSectionTest extends ImprovisoTest {
         sectionBuilder.setInterruptTracks(true);
         section = sectionBuilder.build();
         
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(null);
-        track1.addPositionInterrupt(800);
+        when(message1.getInterrupt()).thenReturn(false, false, false, true);
         
-        this.pattern1.resetExecutions();
-        this.pattern2.resetExecutions();
-        MIDINoteList notes = section.execute(getRandomMock());
+        section.execute(getRandomMock());
         
-        assertEquals(4, this.pattern1.getExecutions()); // 200 - 400 - 600 - 800!!
-        assertEquals(3, this.pattern2.getExecutions()); // 300 - 600 - 800
+        verify(execution1, times(4)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 200 - 400 - 600 - 800!!
+        verify(execution2, times(2)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 300 - 600
+        verify(execution2, times(1)).execute(getRandomMock(), 0.0d, 200); // - 800
         assertEquals(800, section.getActualEnd());
-        assertEquals(9, notes.size());
     }
 }

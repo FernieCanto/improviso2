@@ -112,22 +112,22 @@ public abstract class Group implements java.io.Serializable {
      * Seleciona o próximo sub-item de acordo com o algoritmo e
      * configurações internas do grupo, retornando a mensagem
      * para a trilha.
-     * @param rand
+     * @param random
      * @return Mensagem com opções de fim de execução
      */
-    public Pattern execute(Random rand) {
-        Pattern pattern = selectPattern(rand);
+    public Pattern.PatternExecution execute(Random random) {
+        Pattern.PatternExecution pattern = selectPattern(random);
         message = generateMessage();
         
         executions++;
-        if(this.finishedSignal.signal(executions, rand)) {
+        if(this.finishedSignal.signal(executions, random)) {
             message.setFinished();
             if(disableTrack) {
                 message.setDisable();
             }
         }
         
-        if(this.interruptSignal.signal(executions, rand)) {
+        if(this.interruptSignal.signal(executions, random)) {
             message.setInterrupt();
             if(interruptSection) {
                 message.setInterruptSection();
@@ -153,6 +153,6 @@ public abstract class Group implements java.io.Serializable {
         return this.children;
     }
     
-    protected abstract Pattern selectPattern(Random rand);
+    protected abstract Pattern.PatternExecution selectPattern(Random rand);
     protected abstract GroupMessage generateMessage();
 }

@@ -7,17 +7,17 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class RandomGroupTest extends ImprovisoTest {
-    final private Pattern pattern1;
-    final private Pattern pattern2;
-    final private Pattern pattern3;
+    final private Pattern.PatternExecution pattern1;
+    final private Pattern.PatternExecution pattern2;
+    final private Pattern.PatternExecution pattern3;
     final private LeafGroup leafGroup1;
     final private LeafGroup leafGroup2;
     final private LeafGroup leafGroup3;
     
     public RandomGroupTest() {
-        this.pattern1 = mock(Pattern.class);
-        this.pattern2 = mock(Pattern.class);
-        this.pattern3 = mock(Pattern.class);
+        this.pattern1 = mock(Pattern.PatternExecution.class);
+        this.pattern2 = mock(Pattern.PatternExecution.class);
+        this.pattern3 = mock(Pattern.PatternExecution.class);
         
         this.leafGroup1 = mock(LeafGroup.class);
         when(this.leafGroup1.execute(any(Random.class))).thenReturn(this.pattern1);

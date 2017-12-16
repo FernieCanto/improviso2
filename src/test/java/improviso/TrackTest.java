@@ -9,6 +9,7 @@ import java.util.Random;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
+import org.mockito.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -28,16 +29,16 @@ public class TrackTest extends ImprovisoTest {
         noteList = mock(MIDINoteList.class);
         
         execution = mock(Pattern.PatternExecution.class);
-        when(execution.getLength()).thenReturn(150);
+        when(execution.getLength()).thenReturn(100);
         when(execution.execute(any(Random.class), anyDouble(), anyInt())).thenReturn(noteList);
         
         pattern1 = mock(Pattern.class);
-        when(pattern1.initialize(any(Random.class))).thenReturn(execution);
+        when(pattern1.getNextExecution(any(Random.class))).thenReturn(execution);
         
         groupMessageMock = mock(GroupMessage.class);
         groupMock = mock(Group.class);
         when(groupMock.getMessage()).thenReturn(groupMessageMock);
-        when(groupMock.execute(any(Random.class))).thenReturn(pattern1);
+        when(groupMock.execute(any(Random.class))).thenReturn(execution);
     }
     
     @Test
@@ -63,35 +64,55 @@ public class TrackTest extends ImprovisoTest {
         track = trackBuilder.build();
         track.initialize();
         
-        track.selectNextPattern(getRandomMock());
-        assertNotNull(track.getCurrentExecution());
-        assertEquals(groupMessageMock, track.getMessage());
-        assertEquals(150, track.getEnd());
+        InOrder executionInOrder = inOrder(execution);
+        InOrder noteListInOrder = inOrder(noteList);
         
-        track.execute(getRandomMock(), new Section.UnknownSectionEnd(), false);
-        verify(execution).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE);
-        verify(noteList).offsetNotes(0);
-        assertEquals(150, track.getCurrentPosition());
+        track.selectNextPattern(getRandomMock());
+        assertEquals(groupMessageMock, track.getMessage());
+        assertEquals(100, track.getEnd());
+        
+        track.execute(getRandomMock(), new Section.UnknownSectionEnd(), false, false);
+        executionInOrder.verify(execution).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE);
+        noteListInOrder.verify(noteList).offsetNotes(0);
+        assertEquals(100, track.getCurrentPosition());
+        
+        track.selectNextPattern(getRandomMock());
+        assertEquals(groupMessageMock, track.getMessage());
+        assertEquals(200, track.getEnd());
+        
+        track.execute(getRandomMock(), new Section.UnknownSectionEnd(), false, false);
+        executionInOrder.verify(execution).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE);
+        noteListInOrder.verify(noteList).offsetNotes(100);
+        assertEquals(200, track.getCurrentPosition());
     }
     
     @Test
     public void testExecuteTrackSectionEndInterrupt() {
-        // TODO: TEST MULTIPLE EXECUTIONS OF TRACK!
         Track track;
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
                 .setId("trackTest").setRootGroup(groupMock);
         track = trackBuilder.build();
-        
         track.initialize();
         
-        track.selectNextPattern(getRandomMock());
-        assertNotNull(track.getCurrentExecution());
-        assertEquals(groupMessageMock, track.getMessage());
-        assertEquals(150, track.getEnd());
+        InOrder executionInOrder = inOrder(execution);
+        InOrder noteListInOrder = inOrder(noteList);
         
-        track.execute(getRandomMock(), Section.SectionEnd.createEnd(60), true);
-        verify(execution).execute(getRandomMock(), 1.0, 60);
-        verify(noteList).offsetNotes(0);
-        assertEquals(60, track.getCurrentPosition());
+        track.selectNextPattern(getRandomMock());
+        assertEquals(groupMessageMock, track.getMessage());
+        assertEquals(100, track.getEnd());
+        
+        track.execute(getRandomMock(), Section.SectionEnd.createEnd(160), true, true);
+        executionInOrder.verify(execution).execute(getRandomMock(), 0.625d, 160);
+        noteListInOrder.verify(noteList).offsetNotes(0);
+        assertEquals(100, track.getCurrentPosition());
+        
+        track.selectNextPattern(getRandomMock());
+        assertEquals(groupMessageMock, track.getMessage());
+        assertEquals(200, track.getEnd());
+        
+        track.execute(getRandomMock(), Section.SectionEnd.createEnd(160), true, true);
+        executionInOrder.verify(execution).execute(getRandomMock(), 1.0d, 60);
+        noteListInOrder.verify(noteList).offsetNotes(100);
+        assertEquals(160, track.getCurrentPosition());
     }
 }

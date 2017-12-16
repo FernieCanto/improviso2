@@ -57,7 +57,7 @@ public abstract class RepetitionGroup extends Group {
     }
     
     @Override
-    protected Pattern selectPattern(Random rand) {
+    protected Pattern.PatternExecution selectPattern(Random rand) {
         this.selectedGroup = this.selectGroup(rand);
         return this.selectedGroup.execute(rand);
     }

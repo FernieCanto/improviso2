@@ -33,6 +33,11 @@ public class FixedSection extends Section {
     }
     
     @Override
+    protected boolean calculatePatternPosition() {
+        return true;
+    }
+    
+    @Override
     protected SectionEnd processTrackMessage(Track track) {
         return new UnknownSectionEnd();
     }

@@ -92,44 +92,24 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
 
         @Override
         public int compareTo(Integer o) {
-            if (!this.endIsKnown()) {
-                return 1;
-            } else {
-                return this.value.compareTo(o);
-            }
+            return this.value.compareTo(o);
         }
         
         public int compareTo(SectionEnd compareEnd) {
-            if (compareEnd.endIsKnown()) {
-                return this.compareTo(compareEnd.intValue());
-            } else {
-                if (!this.endIsKnown()) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            }
+            return this.compareTo(compareEnd.intValue());
         }
         
         public boolean endIsKnown() {
-            return this.value != null;
+            return true;
         }
         
         public int intValue() {
-            if (this.endIsKnown()) {
-                return this.value;
-            } else {
-                return Integer.MAX_VALUE;
-            }
+            return this.value;
         }
         
         @Override
         public String toString() {
-            if (this.endIsKnown()) {
-                return this.value.toString();
-            } else {
-                return "unknown";
-            }
+            return this.value.toString();
         }
     }
     
@@ -247,7 +227,8 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
             notes.addAll(selectedTrack.execute(
                     random,
                     end,
-                    this.interruptTracks
+                    this.interruptTracks,
+                    this.calculatePatternPosition()
             ));
             SectionEnd newEnd = this.processTrackMessage(selectedTrack);
             if (end.compareTo(newEnd) == 1) {
@@ -303,6 +284,8 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
             System.out.println(message);
         }
     }
+    
+    abstract protected boolean calculatePatternPosition();
     
     abstract protected SectionEnd initialize(Random random) throws ImprovisoException;
     

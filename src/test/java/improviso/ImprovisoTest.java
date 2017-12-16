@@ -41,13 +41,17 @@ abstract public class ImprovisoTest {
         return execution;
     }
     
-    protected Group getGroupMock(Pattern.PatternExecution execution) {
+    protected Group getGroupMock(Pattern.PatternExecution execution, GroupMessage message) {
         Pattern pattern1 = mock(Pattern.class);
-        when(pattern1.initialize(any(Random.class))).thenReturn(execution);
+        when(pattern1.getNextExecution(any(Random.class))).thenReturn(execution);
         
         Group groupMock = mock(Group.class);
-        when(groupMock.getMessage()).thenReturn(mock(GroupMessage.class));
-        when(groupMock.execute(any(Random.class))).thenReturn(pattern1);
+        when(groupMock.getMessage()).thenReturn(message);
+        when(groupMock.execute(any(Random.class))).thenReturn(execution);
         return groupMock;
+    }
+    
+    protected Group getGroupMock(Pattern.PatternExecution execution) {
+        return getGroupMock(execution, mock(GroupMessage.class));
     }
 }

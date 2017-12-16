@@ -19,12 +19,14 @@ public class LeafGroupTest extends ImprovisoTest {
      */
     @Test
     public void testBuildLeafGroup() {
+        Pattern.PatternExecution execution = mock(Pattern.PatternExecution.class);
         Pattern pattern = mock(Pattern.class);
+        when(pattern.getNextExecution(getRandomMock())).thenReturn(execution);
         
         LeafGroup.LeafGroupBuilder builder = new LeafGroup.LeafGroupBuilder();
         LeafGroup group = builder.setLeafPattern(pattern).build();
         
         assertNotNull(group);
-        assertEquals(pattern, group.selectPattern(getRandomMock()));
+        assertEquals(execution, group.selectPattern(getRandomMock()));
     }
 }

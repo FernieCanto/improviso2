@@ -125,12 +125,12 @@ public class Pattern implements java.io.Serializable {
     }
 
     /**
-     * Chooses a length for the next execution of this pattern. This method must
-     * be invoked before every execution.
+     * Creates a new execution for the pattern, with a length randomly selected
+     * from its range.
      * @param random The Random object
      * @return 
      */
-    public PatternExecution initialize(Random random) {
+    public PatternExecution getNextExecution(Random random) {
         return new PatternExecution(this, this.duration.getValue(random));
     }
     

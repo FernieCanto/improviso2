@@ -18,6 +18,11 @@ public class VariableSection extends Section {
     }
     
     @Override
+    protected boolean calculatePatternPosition() {
+        return false;
+    }
+    
+    @Override
     protected SectionEnd initialize(Random random) throws ImprovisoException {
         displayMessage("INITIALIZING");
         return new UnknownSectionEnd();
