@@ -11,7 +11,7 @@ public class Track implements java.io.Serializable {
     private final String id;
     private final Group rootGroup;
     
-    private Pattern.PatternExecution currentExecution;
+    private PatternExecution currentExecution;
     private int currentPosition;
     
     private Integer positionFinished = null;
@@ -56,12 +56,14 @@ public class Track implements java.io.Serializable {
     /**
      * Prepares the Track for a new execution of its Section, updating its
      * current position and resetting its Group tree.
+     * @param random
      */
-    public void initialize() {
+    public void initialize(Random random) {
         this.currentPosition = 0;
         this.rootGroup.resetGroup();
         this.positionFinished = null;
         this.positionInterrupt = null;
+        this.currentExecution = this.getNextPatternExecution(random);
     }
     
     /**
@@ -70,8 +72,8 @@ public class Track implements java.io.Serializable {
      * returned
      * @param rand
      */
-    public void selectNextPattern(Random rand) {
-        this.currentExecution = this.rootGroup.execute(rand);
+    private PatternExecution getNextPatternExecution(Random rand) {
+        return this.rootGroup.execute(rand);
     }
     
     /**
@@ -124,6 +126,7 @@ public class Track implements java.io.Serializable {
         }
         
         this.processMessage();
+        this.currentExecution = this.getNextPatternExecution(random);
         
         return result;
     }

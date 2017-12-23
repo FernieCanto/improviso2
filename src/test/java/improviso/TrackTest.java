@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
  */
 public class TrackTest extends ImprovisoTest {
     private Pattern pattern1;
-    private Pattern.PatternExecution execution;
+    private PatternExecution execution;
     private MIDINoteList noteList;
     
     private GroupMessage groupMessageMock;
@@ -28,7 +28,7 @@ public class TrackTest extends ImprovisoTest {
     public void setUp() {
         noteList = mock(MIDINoteList.class);
         
-        execution = mock(Pattern.PatternExecution.class);
+        execution = mock(PatternExecution.class);
         when(execution.getLength()).thenReturn(100);
         when(execution.execute(any(Random.class), anyDouble(), anyInt())).thenReturn(noteList);
         
@@ -51,9 +51,10 @@ public class TrackTest extends ImprovisoTest {
         assertNotNull(track);
         assertEquals("trackTest", track.getId());
         
-        track.initialize();
+        track.initialize(getRandomMock());
         assertEquals(0, track.getCurrentPosition());
         verify(groupMock).resetGroup();
+        verify(groupMock).execute(getRandomMock());
     }
     
     @Test
@@ -62,12 +63,11 @@ public class TrackTest extends ImprovisoTest {
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
                 .setId("trackTest").setRootGroup(groupMock);
         track = trackBuilder.build();
-        track.initialize();
+        track.initialize(getRandomMock());
         
         InOrder executionInOrder = inOrder(execution);
         InOrder noteListInOrder = inOrder(noteList);
         
-        track.selectNextPattern(getRandomMock());
         assertEquals(groupMessageMock, track.getMessage());
         assertEquals(100, track.getEnd());
         
@@ -76,7 +76,6 @@ public class TrackTest extends ImprovisoTest {
         noteListInOrder.verify(noteList).offsetNotes(0);
         assertEquals(100, track.getCurrentPosition());
         
-        track.selectNextPattern(getRandomMock());
         assertEquals(groupMessageMock, track.getMessage());
         assertEquals(200, track.getEnd());
         
@@ -92,12 +91,11 @@ public class TrackTest extends ImprovisoTest {
         Track.TrackBuilder trackBuilder = new Track.TrackBuilder()
                 .setId("trackTest").setRootGroup(groupMock);
         track = trackBuilder.build();
-        track.initialize();
+        track.initialize(getRandomMock());
         
         InOrder executionInOrder = inOrder(execution);
         InOrder noteListInOrder = inOrder(noteList);
         
-        track.selectNextPattern(getRandomMock());
         assertEquals(groupMessageMock, track.getMessage());
         assertEquals(100, track.getEnd());
         
@@ -106,7 +104,6 @@ public class TrackTest extends ImprovisoTest {
         noteListInOrder.verify(noteList).offsetNotes(0);
         assertEquals(100, track.getCurrentPosition());
         
-        track.selectNextPattern(getRandomMock());
         assertEquals(groupMessageMock, track.getMessage());
         assertEquals(200, track.getEnd());
         

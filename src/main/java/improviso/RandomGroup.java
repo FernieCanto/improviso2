@@ -44,7 +44,7 @@ public class RandomGroup extends RepetitionGroup {
     }
     
     @Override
-    protected boolean selectNextGroup(Random rand) {
+    protected Group selectNextGroup(Random rand) {
         int selection = rand.nextInt(this.maxProbability);
         int index = 0;
 
@@ -55,8 +55,6 @@ public class RandomGroup extends RepetitionGroup {
                 index++;
             }
         }
-        this.selectedGroup = this.children.get(index);
-        this.selectedGroupIndex = index;
-        return true;
+        return this.getChildren().get(index);
     }
 }

@@ -9,9 +9,9 @@ public class VariableSectionTest extends ImprovisoTest {
     private static final int PATTERN2_LENGTH = 300;
     private static final int PATTERN3_LENGTH = 700;
     
-    private Pattern.PatternExecution execution1;
-    private Pattern.PatternExecution execution2;
-    private Pattern.PatternExecution execution3;
+    private PatternExecution execution1;
+    private PatternExecution execution2;
+    private PatternExecution execution3;
     private Group groupMock1;
     private Group groupMock2;
     private Group groupMock3;

@@ -1,19 +1,17 @@
 package improviso;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 /**
  * Implementa um grupo cujos grupos children podem repetir
  * de acordo com certos parâmetros:
  * @author fernando
  */
 public abstract class RepetitionGroup extends Group {
-    HashMap<Group, Integer> iterationsMap = new HashMap<>();
-    HashMap<Group, Double> inertiaMap = new HashMap<>();
+    private HashMap<Group, Integer> iterationsMap = new HashMap<>();
+    private HashMap<Group, Double> inertiaMap = new HashMap<>();
     int currentIterations = 0;
-    protected boolean resetIterations = true; // NOT CONFIGURED
-    Group selectedGroup = null;
+    private boolean resetIterations = true; // NOT CONFIGURED
+    protected Group selectedGroup = null;
     
     abstract public static class RepetitionGroupBuilder extends Group.GroupBuilder {
         final private HashMap<Group, Integer> iterationsMap = new HashMap<>();
@@ -41,7 +39,7 @@ public abstract class RepetitionGroup extends Group {
         this.inertiaMap = builder.getInertiaMap();
     }
     
-    public Group selectGroup(Random rand) {
+    private Group selectGroup(Random rand) {
         if(this.selectedGroup != null) {
             if(iterationsMap.get(this.selectedGroup) > currentIterations) {
                 currentIterations++;
@@ -52,12 +50,12 @@ public abstract class RepetitionGroup extends Group {
             }
         }
         currentIterations = 1;
-        this.selectNextGroup(rand);
+        this.selectedGroup = this.selectNextGroup(rand);
         return this.selectedGroup;
     }
     
     @Override
-    protected Pattern.PatternExecution selectPattern(Random rand) {
+    protected PatternExecution selectPattern(Random rand) {
         this.selectedGroup = this.selectGroup(rand);
         return this.selectedGroup.execute(rand);
     }
@@ -75,5 +73,5 @@ public abstract class RepetitionGroup extends Group {
         super.resetGroup();
     }
     
-    protected abstract boolean selectNextGroup(Random rand);
+    protected abstract Group selectNextGroup(Random rand);
 }

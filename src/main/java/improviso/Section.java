@@ -212,8 +212,7 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
         }
         
         this.tracks.forEach((track) -> {
-            track.initialize();
-            track.selectNextPattern(random);
+            track.initialize(random);
         });
         
         MIDINoteList notes = new MIDINoteList();
@@ -237,8 +236,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
             
             displayMessage("  Executed " + selectedTrack.getId() + " now @ " + selectedTrack.getCurrentPosition());
             displayMessage("  Section @ " + this.getCurrentPosition() + ", end @ " + end.toString());
-
-            selectedTrack.selectNextPattern(random);
         }
         
         return notes;

@@ -20,21 +20,14 @@ import java.util.*;
  */
 public abstract class Group implements java.io.Serializable {
     final private String id;
-    final protected ArrayList<Group> children;
-    final protected GroupSignal finishedSignal;
-    final protected GroupSignal interruptSignal;
+    final private ArrayList<Group> children;
+    final private GroupSignal finishedSignal;
+    final private GroupSignal interruptSignal;    
+    final private boolean disableTrack = false; // NOT CONFIGURED
+    final private boolean interruptSection = false; // NOT CONFIGURED
     
-    final protected Group[] childrenArray; // ?
-    
-    protected GroupMessage message = null;
-    
-    protected boolean debug = false;
-    protected Pattern selectedPattern = null;
-    protected Integer selectedGroupIndex = null;
-    protected int executions = 0;
-    
-    final protected boolean disableTrack = false; // NOT CONFIGURED
-    final protected boolean interruptSection = false; // NOT CONFIGURED
+    private GroupMessage message = null;
+    private int executions = 0;
     
     public static abstract class GroupBuilder {
         private String id;
@@ -84,8 +77,6 @@ public abstract class Group implements java.io.Serializable {
     protected Group(GroupBuilder builder) {
         this.id = builder.getId();
         
-        this.childrenArray = new Group[builder.getChildren().size()];
-        builder.getChildren().toArray(this.childrenArray);
         this.children = builder.getChildren();
         
         if (builder.getFinishedSignal() != null) {
@@ -115,8 +106,8 @@ public abstract class Group implements java.io.Serializable {
      * @param random
      * @return Mensagem com opções de fim de execução
      */
-    public Pattern.PatternExecution execute(Random random) {
-        Pattern.PatternExecution pattern = selectPattern(random);
+    public PatternExecution execute(Random random) {
+        PatternExecution pattern = selectPattern(random);
         message = generateMessage();
         
         executions++;
@@ -153,6 +144,6 @@ public abstract class Group implements java.io.Serializable {
         return this.children;
     }
     
-    protected abstract Pattern.PatternExecution selectPattern(Random rand);
+    protected abstract PatternExecution selectPattern(Random rand);
     protected abstract GroupMessage generateMessage();
 }

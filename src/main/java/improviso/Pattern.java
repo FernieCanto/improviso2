@@ -81,34 +81,6 @@ public class Pattern implements java.io.Serializable {
         }
     }
     
-    public static class PatternExecution {
-        final private Pattern pattern;
-        final private int length;
-        
-        public PatternExecution(Pattern pattern, int length) {
-            this.pattern = pattern;
-            this.length = length;
-        }
-        
-        public int getLength() {
-            return this.length;
-        }
-        
-        public MIDINoteList execute(Random random, double finalPosition, int length) {
-            MIDINoteList noteList = new MIDINoteList();
-            this.pattern.getNoteIterator().forEachRemaining((note) -> {
-                noteList.addAll(
-                        note.execute(
-                                random,
-                                this.length,
-                                finalPosition, 
-                                length
-                        ));
-            });
-
-            return noteList;
-        }
-    }
     
     protected Pattern(PatternBuilder builder) {
         this.id = builder.getId();

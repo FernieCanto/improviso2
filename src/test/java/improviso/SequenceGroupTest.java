@@ -14,8 +14,8 @@ import static org.mockito.Mockito.*;
  * @author User
  */
 public class SequenceGroupTest extends ImprovisoTest {
-    private Pattern.PatternExecution execution1;
-    private Pattern.PatternExecution execution2;
+    private PatternExecution execution1;
+    private PatternExecution execution2;
     private Pattern pattern1;
     private Pattern pattern2;
     private LeafGroup leafGroup1;
@@ -23,8 +23,8 @@ public class SequenceGroupTest extends ImprovisoTest {
     
     @Before
     public void setUp() {
-        this.execution1 = mock(Pattern.PatternExecution.class);
-        this.execution2 = mock(Pattern.PatternExecution.class);
+        this.execution1 = mock(PatternExecution.class);
+        this.execution2 = mock(PatternExecution.class);
         
         this.pattern1 = mock(Pattern.class);
         when(this.pattern1.getNextExecution(getRandomMock())).thenReturn(this.execution1);

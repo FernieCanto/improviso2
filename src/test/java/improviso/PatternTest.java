@@ -29,7 +29,7 @@ public class PatternTest extends ImprovisoTest {
         assertNotNull(pattern);
         assertEquals("empty", pattern.getId());
         
-        Pattern.PatternExecution execution = pattern.getNextExecution(getRandomMock());
+        PatternExecution execution = pattern.getNextExecution(getRandomMock());
         assertEquals(100, execution.getLength());
         
         MIDINoteList notes = execution.execute(getRandomMock(), 1, 1);
@@ -51,7 +51,7 @@ public class PatternTest extends ImprovisoTest {
                 .build();
         
         assertNotNull(pattern);
-        Pattern.PatternExecution execution = pattern.getNextExecution(getRandomMock());
+        PatternExecution execution = pattern.getNextExecution(getRandomMock());
         assertEquals(100, execution.getLength());
         
         execution.execute(getRandomMock(), 0, 99);

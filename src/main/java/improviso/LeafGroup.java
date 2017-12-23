@@ -38,7 +38,7 @@ public class LeafGroup extends Group {
     }
     
     @Override
-    protected Pattern.PatternExecution selectPattern(Random rand) {
+    protected PatternExecution selectPattern(Random rand) {
         return this.leafPattern.getNextExecution(rand);
     }
     

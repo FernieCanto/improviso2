@@ -7,8 +7,8 @@ import java.util.Random;
  * @author fernando
  */
 public class SequenceGroup extends RepetitionGroup {
-    protected int currentIndex = 0;
-    protected boolean resetOrder = true;
+    private int currentIndex = 0;
+    private boolean resetOrder = true;
     
     public static class SequenceGroupBuilder extends RepetitionGroup.RepetitionGroupBuilder {
         @Override
@@ -31,13 +31,13 @@ public class SequenceGroup extends RepetitionGroup {
     }
     
     @Override
-    protected boolean selectNextGroup(Random rand) {
-        selectedGroup = children.get(currentIndex);
-        selectedGroupIndex = currentIndex;
+    protected Group selectNextGroup(Random rand) {
+        selectedGroup = getChildren().get(currentIndex);
 
         currentIndex++;
-        if(currentIndex == children.size())
+        if(currentIndex == getChildren().size()) {
             currentIndex = 0;
-        return true;
+        }
+        return selectedGroup;
     }
 }
