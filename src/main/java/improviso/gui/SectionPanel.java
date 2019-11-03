@@ -49,6 +49,7 @@ public class SectionPanel extends javax.swing.JPanel {
         chkSectionInterruptTracks = new javax.swing.JCheckBox();
         btnSectionApply = new javax.swing.JButton();
         btnSectionPlay = new javax.swing.JButton();
+        btnEditTracks = new javax.swing.JButton();
 
         listSections.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listSections.setName("listSections"); // NOI18N
@@ -128,6 +129,13 @@ public class SectionPanel extends javax.swing.JPanel {
             }
         });
 
+        btnEditTracks.setText("Edit tracks");
+        btnEditTracks.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditTracksActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelSectionLayout = new javax.swing.GroupLayout(panelSection);
         panelSection.setLayout(panelSectionLayout);
         panelSectionLayout.setHorizontalGroup(
@@ -150,7 +158,9 @@ public class SectionPanel extends javax.swing.JPanel {
                             .addGroup(panelSectionLayout.createSequentialGroup()
                                 .addComponent(btnSectionApply)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnSectionPlay)))
+                                .addComponent(btnSectionPlay)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnEditTracks)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -169,10 +179,11 @@ public class SectionPanel extends javax.swing.JPanel {
                     .addComponent(txtSectionTempo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(chkSectionInterruptTracks)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
                 .addGroup(panelSectionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSectionApply)
-                    .addComponent(btnSectionPlay))
+                    .addComponent(btnSectionPlay)
+                    .addComponent(btnEditTracks))
                 .addContainerGap())
         );
 
@@ -191,10 +202,10 @@ public class SectionPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(panelSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(71, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addComponent(panelSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -307,8 +318,13 @@ public class SectionPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnSectionPlayActionPerformed
 
+    private void btnEditTracksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditTracksActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnEditTracksActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnEditTracks;
     private javax.swing.JButton btnSectionApply;
     private javax.swing.JButton btnSectionPlay;
     private javax.swing.JCheckBox chkSectionInterruptTracks;

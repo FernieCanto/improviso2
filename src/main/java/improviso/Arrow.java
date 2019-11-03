@@ -2,9 +2,9 @@ package improviso;
 
 /**
  *
- * @author fernando
+ * @author Fernie Canto
  */
-public class Arrow {
+public class Arrow implements java.io.Serializable {
     final private String destinationSection;
     final private int probability;
     final private int maxExecutions;

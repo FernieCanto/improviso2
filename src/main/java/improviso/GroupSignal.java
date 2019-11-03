@@ -6,7 +6,7 @@ import java.util.Random;
  *
  * @author FernieCanto
  */
-public class GroupSignal {
+public class GroupSignal implements java.io.Serializable {
     private final Integer minExecutionsSignal;
     private final Double probabilitySignal;
     private final Integer maxExecutionsSignal;

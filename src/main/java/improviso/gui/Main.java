@@ -7,6 +7,8 @@ package improviso.gui;
 import improviso.*;
 import java.io.*;
 import java.awt.Dimension;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 
@@ -21,6 +23,7 @@ import org.xml.sax.SAXException;
  */
 public class Main extends javax.swing.JFrame {
     final private SectionPanel sectionPanel;
+    final private TrackPanel trackPanel;
     final private CompositionController controller = new CompositionController();
     /**
      * Creates new form Main
@@ -28,7 +31,9 @@ public class Main extends javax.swing.JFrame {
     public Main() {
         initComponents();
         sectionPanel = new SectionPanel(this.controller);
-        tabs.add("Section", sectionPanel);
+        trackPanel = new TrackPanel(this.controller);
+        tabs.add("Sections", sectionPanel);
+        tabs.add("Tracks", trackPanel);
     }
 
     /**
@@ -40,31 +45,62 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btnLoadFile = new javax.swing.JButton();
-        btnPlayFile = new javax.swing.JButton();
         tabs = new javax.swing.JTabbedPane();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu2 = new javax.swing.JMenu();
+        itemOpen = new javax.swing.JMenuItem();
+        itemImportXML = new javax.swing.JMenuItem();
+        itemSave = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        itemExit = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(900, 600));
-
-        btnLoadFile.setText("File");
-        btnLoadFile.setName("btnLoadFile"); // NOI18N
-        btnLoadFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLoadFileActionPerformed(evt);
-            }
-        });
-
-        btnPlayFile.setText("Play");
-        btnPlayFile.setEnabled(false);
-        btnPlayFile.setName("btnPlayFile"); // NOI18N
-        btnPlayFile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPlayButtonActionPerformed(evt);
-            }
-        });
 
         tabs.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+        tabs.setToolTipText("");
+
+        jMenu2.setText("File");
+
+        itemOpen.setText("Open file");
+        itemOpen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemOpenActionPerformed(evt);
+            }
+        });
+        jMenu2.add(itemOpen);
+
+        itemImportXML.setText("Import from XML");
+        itemImportXML.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemImportXMLActionPerformed(evt);
+            }
+        });
+        jMenu2.add(itemImportXML);
+
+        itemSave.setText("Save file");
+        itemSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemSaveActionPerformed(evt);
+            }
+        });
+        jMenu2.add(itemSave);
+        jMenu2.add(jSeparator1);
+
+        itemExit.setText("Exit");
+        itemExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemExitActionPerformed(evt);
+            }
+        });
+        jMenu2.add(itemExit);
+
+        jMenuBar1.add(jMenu2);
+
+        jMenu3.setText("Edit");
+        jMenuBar1.add(jMenu3);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -72,25 +108,15 @@ public class Main extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tabs)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnLoadFile)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnPlayFile)
-                        .addGap(0, 760, Short.MAX_VALUE)))
+                .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 880, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnLoadFile)
-                    .addComponent(btnPlayFile))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tabs, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(241, Short.MAX_VALUE))
+                .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -112,14 +138,29 @@ public class Main extends javax.swing.JFrame {
         }
     }
     
-    private void btnLoadFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadFileActionPerformed
+    private void itemImportXMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemImportXMLActionPerformed
+        importXMLFile();
+    }//GEN-LAST:event_itemImportXMLActionPerformed
+
+    private void itemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemExitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_itemExitActionPerformed
+
+    private void itemSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemSaveActionPerformed
+        saveFile();
+    }//GEN-LAST:event_itemSaveActionPerformed
+
+    private void itemOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemOpenActionPerformed
+        openFile();
+    }//GEN-LAST:event_itemOpenActionPerformed
+
+    private void importXMLFile() {
         final JFileChooser fc = new JFileChooser();
         fc.setPreferredSize(new Dimension(1200, 800));
         fc.setCurrentDirectory(new File("."));
         if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-                controller.openComposition(fc.getSelectedFile().getAbsolutePath());
-                this.btnPlayFile.setEnabled(true);
+                controller.importXML(fc.getSelectedFile().getAbsolutePath());
                 this.sectionPanel.setSectionList(controller.getSectionList());
             } catch (ImprovisoException ex) {
                 JOptionPane.showMessageDialog(rootPane, "Error creating composition: " + ex.getMessage());
@@ -131,19 +172,39 @@ public class Main extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(rootPane, "Error reading file: " + ex.getMessage());
             }
         };
-        
-    }//GEN-LAST:event_btnLoadFileActionPerformed
-
-    private void btnPlayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayButtonActionPerformed
+    }
+    
+    private void openFile() {
+        try {
+            final JFileChooser fc = new JFileChooser();
+            fc.setPreferredSize(new Dimension(1200, 800));
+            fc.setCurrentDirectory(new File("."));
+            if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                controller.openComposition(fc.getSelectedFile().getAbsolutePath());
+                this.sectionPanel.setSectionList(controller.getSectionList());
+            }
+        } catch (ClassNotFoundException | IOException ex) {
+            System.out.println(ex);
+            JOptionPane.showMessageDialog(rootPane, "Error opening composition: " + ex.getMessage());
+        }
+    }
+    
+    private void saveFile() {
         if (controller.isCompositionLoaded()) {
             try {
-                controller.playComposition();
-            } catch (InvalidMidiDataException | ImprovisoException | IOException | MidiUnavailableException ex) {
-                JOptionPane.showMessageDialog(rootPane, "Error playing composition: " + ex.getMessage());
+                final JFileChooser fc = new JFileChooser();
+                fc.setPreferredSize(new Dimension(1200, 800));
+                fc.setCurrentDirectory(new File("."));
+                if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                    controller.saveComposition(fc.getSelectedFile().getAbsolutePath());
+                }
+            } catch (IOException ex) {
+                System.out.println(ex);
+                JOptionPane.showMessageDialog(rootPane, "Error saving composition: " + ex.getMessage());
             }
         }
-    }//GEN-LAST:event_btnPlayButtonActionPerformed
-
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -180,8 +241,14 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnLoadFile;
-    private javax.swing.JButton btnPlayFile;
+    private javax.swing.JMenuItem itemExit;
+    private javax.swing.JMenuItem itemImportXML;
+    private javax.swing.JMenuItem itemOpen;
+    private javax.swing.JMenuItem itemSave;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JTabbedPane tabs;
     // End of variables declaration//GEN-END:variables
 

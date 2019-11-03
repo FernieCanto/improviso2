@@ -153,10 +153,10 @@
     
     <structure>
         <section id="section1" after="first">
-            <arrow to="section2" maxExecutions="1" />
+            <arrow to="section2" maxExecutions="3" />
         </section>
         <section id="section2" after="second">
-            <arrow to="section1" maxExecutions="1" />
+            <arrow to="section1" maxExecutions="3" />
         </section>
     </structure>
 </composition>

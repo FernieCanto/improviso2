@@ -33,30 +33,30 @@ public class IntegerRange extends NumberRange<Integer> {
     
     @Override
     public Integer getValue(Random random, double position) {
-        return getValueMin() + (resolution * Math.round(new Float(getVariation(random, position)) / new Float(resolution)));
+        return getValueMin() + (this.resolution * Math.round((float)getRandomValueAtPosition(random, position) / (float)this.resolution));
     }
     
-    private int getVariation(Random random, double position) {
-        return getBaseValue(position) + getRandomVariation(random, position);
+    private int getRandomValueAtPosition(Random random, double position) {
+        return getMinValueAtPosition(position) + getRandomValueWithinInterval(random, position);
     }
     
-    private int getBaseValue(double position) {
+    private int getMinValueAtPosition(double position) {
         return (int)( (getValueEndMin() - getValueMin()) * position );
     }
     
-    private int getRandomVariation(Random random, double position) {
-        return random.nextInt(this.getIntervalStart() + getBaseInterval(position) + 1);
+    private int getRandomValueWithinInterval(Random random, double position) {
+        return random.nextInt(this.getValueIntervalAtStart() + getValueIntervalAtPosition(position) + 1);
     }
     
-    private int getIntervalStart() {
+    private int getValueIntervalAtStart() {
         return getValueMax() - getValueMin();
     }
     
-    private int getIntervalEnd() {
+    private int getValueIntervalAtEnd() {
         return getValueEndMax() - getValueEndMin();
     }
     
-    private int getBaseInterval(double position) {
-        return (int)( (this.getIntervalEnd() - this.getIntervalStart()) * position);
+    private int getValueIntervalAtPosition(double position) {
+        return (int)( (this.getValueIntervalAtEnd() - this.getValueIntervalAtStart()) * position);
     }
 }

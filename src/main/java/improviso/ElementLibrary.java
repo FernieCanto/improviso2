@@ -4,14 +4,14 @@ import java.util.HashMap;
 
 /**
  *
- * @author User
+ * @author Fernie Canto
  */
-public class ElementLibrary {
-    HashMap<String, Integer> noteAliases = new HashMap<>();
-    HashMap<String, Pattern> patterns = new HashMap<>();
-    HashMap<String, Group> groups = new HashMap<>();
-    HashMap<String, Track> tracks = new HashMap<>();
-    HashMap<String, Section> sections = new HashMap<>();
+public class ElementLibrary implements java.io.Serializable {
+    private final HashMap<String, Integer> noteAliases = new HashMap<>();
+    private final HashMap<String, Pattern> patterns = new HashMap<>();
+    private final HashMap<String, Group> groups = new HashMap<>();
+    private final HashMap<String, Track> tracks = new HashMap<>();
+    private final HashMap<String, Section> sections = new HashMap<>();
     
     public void addNoteAlias(String id, Integer n) {
         this.noteAliases.put(id, n);

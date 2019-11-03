@@ -1,17 +1,4 @@
 apply plugin: 'java'
-apply plugin: "jacoco"
-
-jacoco {
-    toolVersion = "0.7.9"
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled false
-        csv.enabled false
-        html.destination file("${buildDir}/jacocoHtml")
-    }
-}
 
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
@@ -36,6 +23,9 @@ allprojects {
 }
 
 repositories {
+    flatDir {
+        dirs 'libs'
+    }
     mavenCentral()
     jcenter()
     // You may define additional repositories, or even remove "mavenCentral()".

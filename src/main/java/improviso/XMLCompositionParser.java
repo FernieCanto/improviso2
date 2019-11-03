@@ -11,11 +11,9 @@ import org.w3c.dom.*;
  */
 public class XMLCompositionParser {
     private final String fileName;
-    private final ElementLibrary library;
 
     public XMLCompositionParser(String fileName) {
         this.fileName = fileName;
-        this.library = new ElementLibrary();
     }
 
     /**
@@ -54,18 +52,12 @@ public class XMLCompositionParser {
         }
         composition = new Composition(offset, randomSeed);
 
-        /*
-         NodeList aliasImportList = XMLDocument.getElementsByTagName("importAlias");
-         for(int index = 0; index < aliasImportList.getLength(); index++) {
-         Element aliasFileElement = (Element)aliasImportList.item(index);
-         //File aliasXMLFile = new File(aliasFileElement.getAttribute("file"));
-         } */
         Document aliasXMLDocument = dBuilder.parse(dBuilder.getClass().getResourceAsStream("/GMDrumsAliases.xml"));
         aliasXMLDocument.normalizeDocument();
         NodeList aliasList = aliasXMLDocument.getElementsByTagName("alias");
         for (int index = 0; index < aliasList.getLength(); index++) {
             Element aliasElement = (Element) aliasList.item(index);
-            this.library.addNoteAlias(aliasElement.getFirstChild().getNodeValue().trim(), Integer.parseInt(aliasElement.getAttribute("note")));
+            composition.getElementLibrary().addNoteAlias(aliasElement.getFirstChild().getNodeValue().trim(), Integer.parseInt(aliasElement.getAttribute("note")));
         }
 
         NodeList MIDITracks = XMLDocument.getElementsByTagName("MIDITrack");
@@ -76,22 +68,22 @@ public class XMLCompositionParser {
 
         Node patternList = XMLDocument.getElementsByTagName("patternList").item(0);
         if (patternList != null) {
-            this.loadPatterns(patternList);
+            this.loadPatterns(patternList, composition);
         }
 
         Node groupList = XMLDocument.getElementsByTagName("groupList").item(0);
         if (groupList != null) {
-            this.loadGroups(groupList);
+            this.loadGroups(groupList, composition);
         }
 
         Node trackList = XMLDocument.getElementsByTagName("trackList").item(0);
         if (trackList != null) {
-            this.loadTracks(trackList);
+            this.loadTracks(trackList, composition);
         }
 
         Node sectionList = XMLDocument.getElementsByTagName("sectionList").item(0);
         if (sectionList != null) {
-            this.loadSections(sectionList);
+            this.loadSections(sectionList, composition);
         }
 
         this.loadStructure(composition, XMLDocument);
@@ -145,7 +137,7 @@ public class XMLCompositionParser {
      * @return
      * @throws improviso.ImprovisoException
      */
-    private Section generateSectionXML(Element element) throws ImprovisoException {
+    private Section generateSectionXML(Element element, Composition composition) throws ImprovisoException {
         Section.SectionBuilder builder;
         NodeList tracks;
         
@@ -173,26 +165,27 @@ public class XMLCompositionParser {
             if (tracks.item(index).getNodeType() == Node.ELEMENT_NODE) {
                 Element trackElement = (Element) tracks.item(index);
                 if (trackElement.hasAttribute("after")) {
-                    builder.addTrack(library.getTrack(trackElement.getAttribute("after")));
+                    builder.addTrack(composition.getElementLibrary()
+                            .getTrack(trackElement.getAttribute("after")));
                 } else {
-                    builder.addTrack(this.generateTrackXML(trackElement));
+                    builder.addTrack(this.generateTrackXML(trackElement, composition));
                 }
             }
         }
         return builder.build();
     }
 
-    private Group generateGroupXML(Element element) throws ImprovisoException {
+    private Group generateGroupXML(Element element, Composition composition) throws ImprovisoException {
         Group.GroupBuilder builder;
         switch (element.getAttribute("type")) {
             case "sequence":
-                builder = this.configureSequenceGroup(element);
+                builder = this.configureSequenceGroup(element, composition);
                 break;
             case "random":
-                builder = this.configureRandomGroup(element);
+                builder = this.configureRandomGroup(element, composition);
                 break;
             default:
-                builder = this.configureLeafGroup(element);
+                builder = this.configureLeafGroup(element, composition);
                 break;
         }
         if (element.hasAttribute("minExecutionsSignal")) {
@@ -204,41 +197,50 @@ public class XMLCompositionParser {
         return builder.build();
     }
 
-    private LeafGroup.LeafGroupBuilder configureLeafGroup(Element element) throws ImprovisoException {
+    private LeafGroup.LeafGroupBuilder configureLeafGroup(Element element, Composition composition) throws ImprovisoException {
         Pattern p;
         if (element.hasAttribute("pattern")) {
-            p = library.getPattern(element.getAttribute("pattern"));
+            p = composition.getElementLibrary().getPattern(element.getAttribute("pattern"));
         } else {
-            p = this.generatePatternXML((Element) element.getElementsByTagName("pattern").item(0));
+            p = this.generatePatternXML((Element) element.getElementsByTagName("pattern").item(0), composition);
         }
         return new LeafGroup.LeafGroupBuilder().setLeafPattern(p);
     }
     
-    private RandomGroup.RandomGroupBuilder configureRandomGroup(Element element) throws ImprovisoException {
+    private RandomGroup.RandomGroupBuilder configureRandomGroup(Element element, Composition composition) throws ImprovisoException {
         RandomGroup.RandomGroupBuilder builder = new RandomGroup.RandomGroupBuilder();
         NodeList children = element.getChildNodes();
         for (int indice = 0; indice < children.getLength(); indice++) {
             if (children.item(indice).getNodeType() == Node.ELEMENT_NODE) {
                 Element child = (Element) children.item(indice);
-                builder.addChild(this.generateGroupXML(child), child.hasAttribute("probability") ? Integer.parseInt(child.getAttribute("probability")) : null, child.hasAttribute("iterations") ? Integer.parseInt(child.getAttribute("iterations")) : null, child.hasAttribute("inertia") ? Double.parseDouble(child.getAttribute("inertia")) : null);
+                builder.addChild(
+                        this.generateGroupXML(child, composition),
+                        child.hasAttribute("probability") ? Integer.parseInt(child.getAttribute("probability")) : null,
+                        child.hasAttribute("iterations") ? Integer.parseInt(child.getAttribute("iterations")) : null,
+                        child.hasAttribute("inertia") ? Double.parseDouble(child.getAttribute("inertia")) : null
+                );
             }
         }
         return builder;
     }
 
-    private SequenceGroup.SequenceGroupBuilder configureSequenceGroup(Element element) throws ImprovisoException {
+    private SequenceGroup.SequenceGroupBuilder configureSequenceGroup(Element element, Composition composition) throws ImprovisoException {
         SequenceGroup.SequenceGroupBuilder builder = new SequenceGroup.SequenceGroupBuilder();
         NodeList children = element.getChildNodes();
         for (int indice = 0; indice < children.getLength(); indice++) {
             if (children.item(indice).getNodeType() == Node.ELEMENT_NODE) {
                 Element child = (Element) children.item(indice);
-                builder.addChild(this.generateGroupXML(child), child.hasAttribute("iterations") ? Integer.parseInt(child.getAttribute("iterations")) : null, child.hasAttribute("inertia") ? Double.parseDouble(child.getAttribute("inertia")) : null);
+                builder.addChild(
+                        this.generateGroupXML(child, composition),
+                        child.hasAttribute("iterations") ? Integer.parseInt(child.getAttribute("iterations")) : null,
+                        child.hasAttribute("inertia") ? Double.parseDouble(child.getAttribute("inertia")) : null
+                );
             }
         }
         return builder;
     }
 
-    private Pattern generatePatternXML(Element element)
+    private Pattern generatePatternXML(Element element, Composition composition)
             throws ImprovisoException {
         Pattern.PatternBuilder builder = new Pattern.PatternBuilder()
                 .setId(element.getTagName())
@@ -250,15 +252,16 @@ public class XMLCompositionParser {
         NodeList noteDefinitionList = element.getElementsByTagName("note");
         for (int index = 0; index < noteDefinitionList.getLength(); index++) {
             builder.addNote(this.generateNoteDefinitionXML(
-                            (Element) noteDefinitionList.item(index)
+                            (Element) noteDefinitionList.item(index),
+                            composition
                     )
             );
         }
         return builder.build();
     }
 
-    private Note generateNoteDefinitionXML(Element element) throws ImprovisoException {
-        Note.NoteBuilder builder = new Note.NoteBuilder().setPitch(Note.interpretNoteName(library, element.getFirstChild().getNodeValue()));
+    private Note generateNoteDefinitionXML(Element element, Composition composition) throws ImprovisoException {
+        Note.NoteBuilder builder = new Note.NoteBuilder().setPitch(composition.interpretNoteName(element.getFirstChild().getNodeValue()));
         if (element.hasAttribute("relativeStart")) {
             builder.setStart(StringInterpreter.createDoubleInterval(element.getAttribute("relativeStart")));
         } else if (element.hasAttribute("start")) {
@@ -291,14 +294,14 @@ public class XMLCompositionParser {
      * @param element "Track" element to be processed
      * @return
      */
-    private Track generateTrackXML(Element element) throws ImprovisoException {
+    private Track generateTrackXML(Element element, Composition composition) throws ImprovisoException {
         Group rootGroup;
         if (element.hasAttribute("group")) {
-            rootGroup = library.getGroup(element.getAttribute("group"));
+            rootGroup = composition.getElementLibrary().getGroup(element.getAttribute("group"));
         } else if (element.getChildNodes().item(0).getNodeType() == Node.ELEMENT_NODE) {
-            rootGroup = this.generateGroupXML((Element) element.getChildNodes().item(0));
+            rootGroup = this.generateGroupXML((Element) element.getChildNodes().item(0), composition);
         } else if (element.getChildNodes().item(1).getNodeType() == Node.ELEMENT_NODE) {
-            rootGroup = this.generateGroupXML((Element) element.getChildNodes().item(1));
+            rootGroup = this.generateGroupXML((Element) element.getChildNodes().item(1), composition);
         } else {
             throw new ImprovisoException("No group associated with this track");
         }
@@ -312,10 +315,10 @@ public class XMLCompositionParser {
         NodeList sectionElements = structureElement.getElementsByTagName("section");
         for (int index = 0; index < sectionElements.getLength(); index++) {
             Element sectionElement = (Element) sectionElements.item(index);
-            if (!this.library.hasSection(sectionElement.getAttribute("after"))) {
+            if (!composition.getElementLibrary().hasSection(sectionElement.getAttribute("after"))) {
                 throw new ImprovisoException("Invalid section: " + sectionElement.getAttribute("after"));
             }
-            composition.addSection(sectionElement.getAttribute("id"), this.library.getSection(sectionElement.getAttribute("after")));
+            composition.addSection(sectionElement.getAttribute("id"), composition.getElementLibrary().getSection(sectionElement.getAttribute("after")));
 
             NodeList arrows = sectionElement.getElementsByTagName("arrow");
             for (int index2 = 0; index2 < arrows.getLength(); index2++) {
@@ -343,46 +346,46 @@ public class XMLCompositionParser {
         return arrowBuilder.build();
     }
 
-    private void loadSections(Node sectionList) throws ImprovisoException {
+    private void loadSections(Node sectionList, Composition composition) throws ImprovisoException {
         for (int index = 0; index < sectionList.getChildNodes().getLength(); index++) {
             Node sectionNode = sectionList.getChildNodes().item(index);
             if (sectionNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element sectionElement = (Element) sectionNode;
                 String sectionId = sectionElement.getTagName();
-                this.library.addSection(sectionId, this.generateSectionXML(sectionElement));
+                composition.getElementLibrary().addSection(sectionId, this.generateSectionXML(sectionElement, composition));
             }
         }
     }
 
-    private void loadTracks(Node trackList) throws ImprovisoException {
+    private void loadTracks(Node trackList, Composition composition) throws ImprovisoException {
         for (int index = 0; index < trackList.getChildNodes().getLength(); index++) {
             Node trackNode = trackList.getChildNodes().item(index);
             if (trackNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element trackElement = (Element) trackNode;
                 String trackId = trackElement.getTagName();
-                this.library.addTrack(trackId, generateTrackXML(trackElement));
+                composition.getElementLibrary().addTrack(trackId, generateTrackXML(trackElement, composition));
             }
         }
     }
 
-    private void loadGroups(Node groupList) throws ImprovisoException {
+    private void loadGroups(Node groupList, Composition composition) throws ImprovisoException {
         for (int index = 0; index < groupList.getChildNodes().getLength(); index++) {
             Node groupNode = groupList.getChildNodes().item(index);
             if (groupNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element groupElement = (Element) groupNode;
                 String groupId = groupElement.getTagName();
-                this.library.addGroup(groupId, generateGroupXML(groupElement));
+                composition.getElementLibrary().addGroup(groupId, generateGroupXML(groupElement, composition));
             }
         }
     }
 
-    private void loadPatterns(Node patternList) throws ImprovisoException {
+    private void loadPatterns(Node patternList, Composition composition) throws ImprovisoException {
         for (int index = 0; index < patternList.getChildNodes().getLength(); index++) {
             Node patternNode = patternList.getChildNodes().item(index);
             if (patternNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element patternElement = (Element) patternNode;
                 String patternId = patternElement.getTagName();
-                this.library.addPattern(patternId, this.generatePatternXML(patternElement));
+                composition.getElementLibrary().addPattern(patternId, this.generatePatternXML(patternElement, composition));
             }
         }
     }

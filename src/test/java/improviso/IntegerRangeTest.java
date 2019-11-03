@@ -17,10 +17,10 @@ public class IntegerRangeTest extends ImprovisoTest {
     @Test
     public void testFixedValueRange() {
         IntegerRange fixedValue = new IntegerRange(50);
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock()));
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock(), 0.0));
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock(), 0.5));
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock(), 1.0));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock()));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock(), 0.5));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock(), 1.0));
     }
     
     @Test
@@ -28,25 +28,25 @@ public class IntegerRangeTest extends ImprovisoTest {
         IntegerRange fixedValue = new IntegerRange(50, 100);
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(0);
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock()));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock()));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(1);
-        assertEquals(new Integer(51), fixedValue.getValue(getRandomMock()));
+        assertEquals(51, (int)fixedValue.getValue(getRandomMock()));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(49);
-        assertEquals(new Integer(99), fixedValue.getValue(getRandomMock()));
+        assertEquals(99, (int)fixedValue.getValue(getRandomMock()));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(50);
-        assertEquals(new Integer(100), fixedValue.getValue(getRandomMock()));
+        assertEquals(100, (int)fixedValue.getValue(getRandomMock()));
     }
     
     @Test
     public void testVariableValueRange() {
         IntegerRange fixedValue = new IntegerRange(50, 50, 100, 100);
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock()));
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock(), 0.0));
-        assertEquals(new Integer(75), fixedValue.getValue(getRandomMock(), 0.5));
-        assertEquals(new Integer(100), fixedValue.getValue(getRandomMock(), 1.0));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock()));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(75, (int)fixedValue.getValue(getRandomMock(), 0.5));
+        assertEquals(100, (int)fixedValue.getValue(getRandomMock(), 1.0));
     }
     
     @Test
@@ -54,42 +54,42 @@ public class IntegerRangeTest extends ImprovisoTest {
         IntegerRange fixedValue = new IntegerRange(0, 50, 100, 200);
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(1);
-        assertEquals(new Integer(1), fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(1, (int)fixedValue.getValue(getRandomMock(), 0.0));
         when(getRandomMock().nextInt(anyInt())).thenReturn(50);
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock(), 0.0));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(2);
-        assertEquals(new Integer(52), fixedValue.getValue(getRandomMock(), 0.5));
+        assertEquals(52, (int)fixedValue.getValue(getRandomMock(), 0.5));
         when(getRandomMock().nextInt(anyInt())).thenReturn(75);
-        assertEquals(new Integer(125), fixedValue.getValue(getRandomMock(), 0.5));
+        assertEquals(125, (int)fixedValue.getValue(getRandomMock(), 0.5));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(3);
-        assertEquals(new Integer(103), fixedValue.getValue(getRandomMock(), 1.0));
+        assertEquals(103, (int)fixedValue.getValue(getRandomMock(), 1.0));
         when(getRandomMock().nextInt(anyInt())).thenReturn(100);
-        assertEquals(new Integer(200), fixedValue.getValue(getRandomMock(), 1.0));
+        assertEquals(200, (int)fixedValue.getValue(getRandomMock(), 1.0));
     }
-    
+
     @Test
     public void testVariableMinMaxValueResolutionRange() {
         IntegerRange fixedValue = new IntegerRange(0, 50, 100, 200, 10);
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(1);
-        assertEquals(new Integer(0), fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(0, (int)fixedValue.getValue(getRandomMock(), 0.0));
         when(getRandomMock().nextInt(anyInt())).thenReturn(4);
-        assertEquals(new Integer(0), fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(0, (int)fixedValue.getValue(getRandomMock(), 0.0));
         when(getRandomMock().nextInt(anyInt())).thenReturn(5);
-        assertEquals(new Integer(10), fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(10, (int)fixedValue.getValue(getRandomMock(), 0.0));
         when(getRandomMock().nextInt(anyInt())).thenReturn(9);
-        assertEquals(new Integer(10), fixedValue.getValue(getRandomMock(), 0.0));
+        assertEquals(10, (int)fixedValue.getValue(getRandomMock(), 0.0));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(2);
-        assertEquals(new Integer(50), fixedValue.getValue(getRandomMock(), 0.5));
+        assertEquals(50, (int)fixedValue.getValue(getRandomMock(), 0.5));
         when(getRandomMock().nextInt(anyInt())).thenReturn(75);
-        assertEquals(new Integer(130), fixedValue.getValue(getRandomMock(), 0.5));
+        assertEquals(130, (int)fixedValue.getValue(getRandomMock(), 0.5));
         
         when(getRandomMock().nextInt(anyInt())).thenReturn(3);
-        assertEquals(new Integer(100), fixedValue.getValue(getRandomMock(), 1.0));
+        assertEquals(100, (int)fixedValue.getValue(getRandomMock(), 1.0));
         when(getRandomMock().nextInt(anyInt())).thenReturn(100);
-        assertEquals(new Integer(200), fixedValue.getValue(getRandomMock(), 1.0));
+        assertEquals(200, (int)fixedValue.getValue(getRandomMock(), 1.0));
     }
 }

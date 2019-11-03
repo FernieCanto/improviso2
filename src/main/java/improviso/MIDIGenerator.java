@@ -15,7 +15,7 @@ import javax.sound.midi.*;
  * @author fernando
  */
 public class MIDIGenerator {
-    private ArrayList<MIDITrack> MIDITracks;
+    private MIDITrackList MIDITracks;
     private Sequence sequence;
     private javax.sound.midi.Track[] tracks;
     
@@ -26,13 +26,13 @@ public class MIDIGenerator {
         currentTick = 0;
     }
   
-    public MIDIGenerator(ArrayList<MIDITrack> MIDITracks) throws InvalidMidiDataException {
+    public MIDIGenerator(MIDITrackList MIDITracks) throws InvalidMidiDataException {
         sequence = new Sequence(Sequence.PPQ, 120);
         currentTick = 0;
         this.setMIDITracks(MIDITracks);
     }
     
-    public void setMIDITracks(ArrayList<MIDITrack> MIDITracks) throws InvalidMidiDataException {
+    public void setMIDITracks(MIDITrackList MIDITracks) throws InvalidMidiDataException {
         this.MIDITracks = MIDITracks;
         tracks = new javax.sound.midi.Track[MIDITracks.size()];
         int trackIndex = 0;
@@ -113,9 +113,5 @@ public class MIDIGenerator {
     public void generateFile(String fileName) throws IOException {
         java.io.File file = new java.io.File(fileName);
         MidiSystem.write(sequence, 1, file);
-    }
-
-    void setMIDITracks() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

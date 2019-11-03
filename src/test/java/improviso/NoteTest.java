@@ -14,32 +14,6 @@ import static org.mockito.Mockito.*;
  * @author User
  */
 public class NoteTest extends ImprovisoTest {
-    @Test
-    public void testInterpretNoteNames() throws ImprovisoException {
-        ElementLibrary library = new ElementLibrary();
-        library.addNoteAlias("alias", 15);
-        
-        long note1 = Note.interpretNoteName(library, "D#2");
-        assertEquals(51, note1);
-        
-        long note2 = Note.interpretNoteName(library, "Gb1");
-        assertEquals(42, note2);
-        
-        long note3 = Note.interpretNoteName(library, "C-2");
-        assertEquals(0, note3);
-        
-        long note4 = Note.interpretNoteName(library, "50");
-        assertEquals(50, note4);
-        
-        long note5 = Note.interpretNoteName(library, "alias");
-        assertEquals(15, note5);
-    }
-    
-    @Test(expected = ImprovisoException.class)
-    public void testInterpretNoteError() throws ImprovisoException {
-        Note.interpretNoteName(new ElementLibrary(), "erro");
-    }
-    
     /**
      * Test a note that's not generated due to the probability.
      */

@@ -50,7 +50,7 @@ public class SectionConfiguration implements SectionVisitor {
         this.tracks = section.getTracks();
     }
 
-    ExecutableSection buildSection() {
+    Section buildSection() {
         Section.SectionBuilder builder;
         if (this.type == SectionType.TYPE_FIXED) {
             builder = new FixedSection.FixedSectionBuilder()

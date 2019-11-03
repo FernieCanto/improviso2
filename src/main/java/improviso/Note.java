@@ -1,7 +1,6 @@
 package improviso;
 
 import java.util.*;
-import java.util.regex.*;
 
 /**
  * The definition of a note within a pattern. When creating a note, it's
@@ -17,10 +16,7 @@ import java.util.regex.*;
  * the pattern is shrinked or enlarged, the notes will move along with it.
  * @author Fernie Canto
  */
-public class Note {
-    final private static java.util.regex.Pattern NOTE_NAME_PATTERN = java.util.regex.Pattern.compile("^([A-G])([#b])?(-2|-1|\\d)$");
-    private static HashMap<Character, Integer> noteMap;
-    
+public class Note implements java.io.Serializable {
     final private int pitch;
     final private int MIDITrack;
     
@@ -202,7 +198,7 @@ public class Note {
         }
     }
     
-    abstract private static class NotePosition {
+    abstract private static class NotePosition implements java.io.Serializable {
         public static NotePosition createNotePosition(IntegerRange range) {
             return new FixedNotePosition(range);
         }
@@ -259,61 +255,6 @@ public class Note {
         this.velocity = builder.getVelocity();
         this.probability = builder.getProbability();
         this.transposition = builder.getTransposition();
-    }
-    
-    private static HashMap<Character, Integer> getNoteNumberMap() {
-        if (Note.noteMap == null) {
-            noteMap = new HashMap<>();
-            noteMap.put('C', 0);
-            noteMap.put('D', 2);
-            noteMap.put('E', 4);
-            noteMap.put('F', 5);
-            noteMap.put('G', 7);
-            noteMap.put('A', 9);
-            noteMap.put('B', 11);
-        }
-        return noteMap;
-    }
-    
-    /**
-     * Produces the MIDI note number corresponding to the note name. Note names
-     * have to include a letter from A to G, an optional accidental ("b" for
-     * flat or "#" for sharp) and the octave number. Additionally, the note name
-     * can be an alias included in the composition file.
-     * @param library A library of elements
-     * @param stringNoteName The note name to be interpreted
-     * @return The numerical value of the note
-     * @throws ImprovisoException 
-     */
-    public static int interpretNoteName(ElementLibrary library, String stringNoteName)
-        throws ImprovisoException {
-        Matcher noteMatcher = NOTE_NAME_PATTERN.matcher(stringNoteName);
-        
-        if(library.hasNoteAlias(stringNoteName)) {
-            return library.getNoteAlias(stringNoteName);
-        } else if(noteMatcher.matches()) {
-            int note = Note.getNoteNumberMap().get(noteMatcher.group(1).charAt(0));
-            if(noteMatcher.group(2) != null) {
-                if(noteMatcher.group(2).equals("b"))
-                    note--;
-                else
-                    note++;
-            }
-
-            if(!noteMatcher.group(3).equals("-2")) {
-                int octave = Integer.parseInt(noteMatcher.group(3));
-                note += (octave+2) * 12;
-            }
-            return note;
-        } else {
-            try {
-                return Integer.parseInt(stringNoteName);
-            } catch(NumberFormatException e) {
-                ImprovisoException exception = new ImprovisoException("Invalid note name: "+stringNoteName);
-                exception.addSuppressed(e);
-                throw exception;
-            }
-        }
     }
     
     /**

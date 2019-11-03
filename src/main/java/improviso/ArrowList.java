@@ -3,9 +3,9 @@ import java.util.*;
 
 /**
  *
- * @author fernando
+ * @author Fernie Canto
  */
-public class ArrowList {
+public class ArrowList implements java.io.Serializable {
     final private ArrayList<Arrow> originalArrows;
     private ArrayList<Arrow> currentArrows;
     final private LinkedHashMap<Arrow, Integer> accumulatedProbabilities;

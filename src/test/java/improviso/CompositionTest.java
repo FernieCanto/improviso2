@@ -54,6 +54,33 @@ public class CompositionTest {
     }
     
     @Test
+    public void testInterpretNoteNames() throws ImprovisoException {
+        Composition composition = new Composition(0);
+        composition.getElementLibrary().addNoteAlias("alias", 15);
+        
+        long note1 = composition.interpretNoteName("D#2");
+        assertEquals(51, note1);
+        
+        long note2 = composition.interpretNoteName("Gb1");
+        assertEquals(42, note2);
+        
+        long note3 = composition.interpretNoteName("C-2");
+        assertEquals(0, note3);
+        
+        long note4 = composition.interpretNoteName("50");
+        assertEquals(50, note4);
+        
+        long note5 = composition.interpretNoteName("alias");
+        assertEquals(15, note5);
+    }
+    
+    @Test(expected = ImprovisoException.class)
+    public void testInterpretNoteError() throws ImprovisoException {
+        Composition composition = new Composition(0);
+        composition.interpretNoteName("error");
+    }
+    
+    @Test
     public void testBeatsAndTicks() {
         assertEquals("2:40", Composition.showBeatsAndTicks(280));
     }
@@ -87,7 +114,7 @@ public class CompositionTest {
         MIDIGenerator generator = mock(MIDIGenerator.class);
         composition.execute(generator);
         
-        ArgumentCaptor<ArrayList<MIDITrack>> argumentMIDITrackList = ArgumentCaptor.forClass(ArrayList.class);
+        ArgumentCaptor<MIDITrackList> argumentMIDITrackList = ArgumentCaptor.forClass(MIDITrackList.class);
         verify(generator).setMIDITracks(argumentMIDITrackList.capture());
         
         assertEquals(1, argumentMIDITrackList.getValue().size());

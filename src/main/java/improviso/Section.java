@@ -11,7 +11,7 @@ import java.util.*;
  * its Tracks. Sections are directly subordinated to a Composition.
  * @author Fernie Canto
  */
-public abstract class Section implements ExecutableSection, java.io.Serializable {
+public abstract class Section implements java.io.Serializable {
     final private String id;
     final private int timeSignatureNumerator = 4;
     final private int timeSignatureDenominator = 4;
@@ -156,7 +156,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
         this.verbose = builder.getVerbose();
     }
     
-    @Override
     public String getId() {
         return this.id;
     }
@@ -169,7 +168,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
      * Return the tempo of the section.
      * @return Tempo in BPM
      */
-    @Override
     public int getTempo() {
         return this.tempo;
     }
@@ -178,7 +176,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
      * Get the upper part (numerator) of the Section's time signature.
      * @return Numerator
      */
-    @Override
     public int getTimeSignatureNumerator() {
         return this.timeSignatureNumerator;
     }
@@ -187,14 +184,23 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
      * Get the lower part (denominator) of the Section's time signature.
      * @return Denominator
      */
-    @Override
     public int getTimeSignatureDenominator() {
         return this.timeSignatureDenominator;
     }
     
-    @Override
     public ArrayList<Track> getTracks() {
         return this.tracks;
+    }
+    
+    public String[] getTrackIds() {
+        String[] ids = new String[this.tracks.size()];
+        int idx = 0;
+        for (Track track : this.tracks) {
+            ids[idx] = track.getId();
+            idx++;
+        }
+        
+        return ids;
     }
     
     /**
@@ -205,7 +211,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
      * @return List of generated Notes
      * @throws improviso.ImprovisoException
      */
-    @Override
     public MIDINoteList execute(Random random) throws ImprovisoException {
         if (this.tracks.isEmpty()) {
             throw new ImprovisoException("Trying to execute section with no tracks");
@@ -265,7 +270,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
         return selectedTrack.getCurrentPosition();
     }
     
-    @Override
     public int getActualEnd() {
         Track selectedTrack = this.tracks.get(0);
         for(Track t : this.tracks) {
@@ -293,4 +297,6 @@ public abstract class Section implements ExecutableSection, java.io.Serializable
      * @return 
      */
     protected abstract SectionEnd processTrackMessage(Track track);
+    
+    public abstract void accept(SectionVisitor visitor);
 }

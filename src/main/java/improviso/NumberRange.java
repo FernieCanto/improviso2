@@ -11,7 +11,7 @@ import java.util.Random;
  * @author Fernie Canto
  * @param <T>
  */
-abstract public class NumberRange<T extends Number> {
+abstract public class NumberRange<T extends Number> implements java.io.Serializable {
     final private T valueMin;
     final private T valueMax;
     final private T valueEndMin;
