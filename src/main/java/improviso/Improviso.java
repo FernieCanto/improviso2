@@ -1,5 +1,7 @@
 package improviso;
 
+import javax.sound.midi.MidiSystem;
+
 /**
  * Main class of the program, which is responsible for generating the
  * composition from the input XML file and either playing the resulting MIDI
@@ -19,7 +21,7 @@ public class Improviso {
             try {
                 XMLCompositionParser parser = new XMLCompositionParser(args[0]);
                 Composition composition = parser.processXML();
-                MIDIGenerator generator = new MIDIGenerator();
+                MIDIGenerator generator = new MIDIGenerator(MidiSystem.getSequencer());
                 composition.execute(generator);
                 if (args.length == 1) {
                     generator.play();

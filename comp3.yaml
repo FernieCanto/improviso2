@@ -1,0 +1,72 @@
+---
+composition:
+  padding: "4:000"
+  seed: 123
+  structure:
+    - id: section1
+      section: first
+      destinations:
+        - destination: section2
+          maxExecutions: 3
+    - id: section2
+      section: second
+      destinations:
+        - destination: section 1
+          maxExecutions: 3
+
+sections:
+  - first:
+      tempo: 120
+      tracks:
+        - after: pianoTrack
+        - after: drumTrack
+  - second:
+      tempo: 180
+      tracks:
+        - 
+
+tracks:
+  - pianoTrack:
+      - sequence:
+          - pattern: patC
+          - random:
+              - pattern: patAm
+                probability: 3
+              - pattern: patEm
+                probability: 2
+          - pattern: patF
+          - pattern: patG
+  - drumTrack:
+      - sequence:
+          - pattern: drumLoop
+          - pattern: drumLoop
+            finish: {min: 0, max: 5, probability: 0.2}
+
+patterns:
+  - patC:
+  
+  - patAm:
+  
+  - patEm:
+  
+  - patF:
+  
+  - patG:
+  
+  - drumLoop:
+      length: "4:000"
+      notes:
+        - {start: "0:000", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "0:060", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "1:000", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "1:060", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "2:000", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "2:060", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "3:000", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        - {start: "3:060", length: "0:060", velocity: 100, track: 2, value: "Closed Hi-hat"}
+        
+        - {start: "0:000", length: "0:060", velocity: 100, track: 2, value: "Bass Drum 1"}
+        - {start: "1:000", length: "0:060", velocity: 100, track: 2, value: "Snare Drum 2"}
+        - {start: "1:060", length: "0:060", velocity: 100, track: 2, value: "Bass Drum 1"}
+        - {start: "2:000", length: "0:060", velocity: 100, track: 2, value: "Bass Drum 1"}
+        - {start: "3:000", length: "0:060", velocity: 100, track: 2, value: "Snare Drum 2"}

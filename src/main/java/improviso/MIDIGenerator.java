@@ -5,7 +5,9 @@
 package improviso;
 
 import java.io.IOException;
-import java.util.*;
+import static java.lang.Math.round;
+import java.time.Instant;
+import static java.time.temporal.ChronoUnit.MICROS;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.midi.*;
@@ -18,10 +20,12 @@ public class MIDIGenerator {
     private MIDITrackList MIDITracks;
     private Sequence sequence;
     private javax.sound.midi.Track[] tracks;
+    private MidiDevice midiDevice;
     
     private long currentTick;
     
-    public MIDIGenerator() throws InvalidMidiDataException {
+    public MIDIGenerator(MidiDevice midiDevice) throws InvalidMidiDataException {
+        this.midiDevice = midiDevice;
         sequence = new Sequence(Sequence.PPQ, 120);
         currentTick = 0;
     }
@@ -90,23 +94,83 @@ public class MIDIGenerator {
     }
     
     public void play() {
-        try (Sequencer sequencer = MidiSystem.getSequencer()) {
+        try {
+            Sequencer sequencer = MidiSystem.getSequencer();
+            this.midiDevice.open();
+            Receiver receiver = this.midiDevice.getReceiver();
+
+            Transmitter transmitter = sequencer.getTransmitter();
+            transmitter.setReceiver(receiver);
+            
             sequencer.open();
             sequencer.setSequence(this.sequence);
             sequencer.start();
 
+            System.out.println(sequencer.getMicrosecondLength());
+            
+            System.out.println("INICIO");
             try {
                 Thread.sleep((sequencer.getMicrosecondLength() / 1000) + 1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(MIDIGenerator.class.getName()).log(Level.SEVERE, null, ex);
             }
+            System.out.println("FIM");
 
             sequencer.stop();
-            sequencer.close();
+            this.midiDevice.close();
         } catch(MidiUnavailableException ex) {
             System.out.println("MIDI sequencer not available: " + ex.getLocalizedMessage());
         } catch(InvalidMidiDataException ex) {
             System.out.println("MIDI data invalid: " + ex.getLocalizedMessage());
+        }
+    }
+    
+    public void playSequenceRealTime() {
+        int tempo = 120;
+        double qLength = (60.0d / (double)tempo);
+        double tickLength = (qLength / 120.0d);
+        System.out.println(qLength);
+        System.out.println(tickLength);
+        
+        try {
+            int[] nextEvent = new int[this.sequence.getTracks().length];
+            for (int idx = 0; idx < this.sequence.getTracks().length; idx++) {
+                nextEvent[idx] = 0;
+            }
+            
+            this.midiDevice.open();
+            Receiver receiver = this.midiDevice.getReceiver();
+            
+            Instant startingInstant = Instant.now();
+            long initialDevicePosition = this.midiDevice.getMicrosecondPosition();
+            
+            boolean finished;
+            do {
+                finished = true;
+                int trackIdx = 0;
+                for (javax.sound.midi.Track t : this.sequence.getTracks()) {
+                    if (nextEvent[trackIdx] < t.size()) {
+                        MidiEvent evento = t.get(nextEvent[trackIdx]);
+                        long eventTimeInMicroseconds = round(tickLength * (double)evento.getTick() * 1000000.0d);
+                        
+                        long currentPosition = startingInstant.until(Instant.now(), MICROS);
+                        
+                        System.out.println("Device time: " + this.midiDevice.getMicrosecondPosition());
+                        System.out.println("Curent time: " + currentPosition);
+                        System.out.println("Event time: " + eventTimeInMicroseconds);
+                        
+                        if((this.midiDevice.getMicrosecondPosition() - initialDevicePosition) >= eventTimeInMicroseconds) {
+                            receiver.send(evento.getMessage(), 0);
+                            nextEvent[trackIdx]++;
+                        }
+                        finished = false;
+                    }
+
+                    trackIdx++;
+                }
+            } while (!finished);
+        } catch (MidiUnavailableException ex) {
+            Logger.getLogger(MIDIGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

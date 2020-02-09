@@ -22,16 +22,76 @@ import org.xml.sax.SAXException;
  * @author User
  */
 public class Main extends javax.swing.JFrame {
+    final private MIDIDevicePanel devicePanel;
     final private SectionPanel sectionPanel;
     final private TrackPanel trackPanel;
-    final private CompositionController controller = new CompositionController();
+    final private CompositionController controller;
     /**
      * Creates new form Main
      */
     public Main() {
+        int tempo = 120;
+        double qLength = (double)(60.0d / (double)tempo);
+        
+        double tickLength = (double)(qLength / 120.0d);
+        System.out.println(qLength);
+        System.out.println(tickLength);
+        /*
+        MidiDevice.Info midiDeviceInfo = null;
+        Info[] infos = MidiSystem.getMidiDeviceInfo();
+        for (Info i: infos) {
+            System.out.println("DEVICE");
+            System.out.println(i.getName());
+            System.out.println(i.getClass());
+            MidiDevice device = MidiSystem.getMidiDevice(i);
+            System.out.println(device.getClass());
+            if (i.getName().equals("Microsoft GS Wavetable Synth") && midiDeviceInfo == null) {
+                midiDeviceInfo = i;
+            }
+            if (i.getName().equals("loopMIDI Port") && i.getClass().toString().equals("class com.sun.media.sound.MidiOutDeviceProvider$MidiOutDeviceInfo")) {
+                midiDeviceInfo = i;
+            }
+        }
+        
+        if (midiDeviceInfo != null) {
+            System.out.println("SELECTED DEVICE");
+            System.out.println(midiDeviceInfo.getName());
+            System.out.println(midiDeviceInfo.getClass());
+            MidiDevice device = MidiSystem.getMidiDevice(midiDeviceInfo);
+            device.open();
+            System.out.println(device.getClass());
+            System.out.println(device.getMicrosecondPosition());
+
+            Receiver receiver = device.getReceiver();
+            System.out.println(receiver.getClass());
+
+            ShortMessage noteMessageOn1 = new ShortMessage();
+            noteMessageOn1.setMessage(ShortMessage.NOTE_ON, 0, 60, 100);
+            receiver.send(noteMessageOn1, device.getMicrosecondPosition() + 0);
+
+            ShortMessage noteMessageOn2 = new ShortMessage();
+            noteMessageOn2.setMessage(ShortMessage.NOTE_ON, 1, 67, 100);
+            receiver.send(noteMessageOn2, device.getMicrosecondPosition() + 0);
+            System.out.println("ON");
+
+            Thread.sleep(5000);
+
+            ShortMessage noteMessageOff1 = new ShortMessage();
+            noteMessageOff1.setMessage(ShortMessage.NOTE_OFF, 0, 60, 100);
+            receiver.send(noteMessageOff1, device.getMicrosecondPosition() + 0);
+            ShortMessage noteMessageOff2 = new ShortMessage();
+            noteMessageOff2.setMessage(ShortMessage.NOTE_OFF, 1, 67, 100);
+            receiver.send(noteMessageOff2, device.getMicrosecondPosition() + 0);
+            System.out.println("OFF");
+        } */
+        
+        this.controller = new CompositionController();
+        
         initComponents();
+        devicePanel = new MIDIDevicePanel(this.controller);
         sectionPanel = new SectionPanel(this.controller);
         trackPanel = new TrackPanel(this.controller);
+        tabs.add("Devices", devicePanel);
         tabs.add("Sections", sectionPanel);
         tabs.add("Tracks", trackPanel);
     }

@@ -50,6 +50,7 @@ public class SectionPanel extends javax.swing.JPanel {
         btnSectionApply = new javax.swing.JButton();
         btnSectionPlay = new javax.swing.JButton();
         btnEditTracks = new javax.swing.JButton();
+        btnSectionPlayRealTime = new javax.swing.JButton();
 
         listSections.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listSections.setName("listSections"); // NOI18N
@@ -136,6 +137,13 @@ public class SectionPanel extends javax.swing.JPanel {
             }
         });
 
+        btnSectionPlayRealTime.setText("Play real time");
+        btnSectionPlayRealTime.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSectionPlayRealTimeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelSectionLayout = new javax.swing.GroupLayout(panelSection);
         panelSection.setLayout(panelSectionLayout);
         panelSectionLayout.setHorizontalGroup(
@@ -160,7 +168,9 @@ public class SectionPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(btnSectionPlay)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnEditTracks)))
+                                .addComponent(btnEditTracks)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnSectionPlayRealTime)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -183,7 +193,8 @@ public class SectionPanel extends javax.swing.JPanel {
                 .addGroup(panelSectionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSectionApply)
                     .addComponent(btnSectionPlay)
-                    .addComponent(btnEditTracks))
+                    .addComponent(btnEditTracks)
+                    .addComponent(btnSectionPlayRealTime))
                 .addContainerGap())
         );
 
@@ -322,11 +333,22 @@ public class SectionPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnEditTracksActionPerformed
 
+    private void btnSectionPlayRealTimeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSectionPlayRealTimeActionPerformed
+        if (listSections.getSelectedValue() != null) {
+            try {
+                controller.playSectionRealTime(listSections.getSelectedValue());
+            } catch (InvalidMidiDataException | ImprovisoException | IOException | MidiUnavailableException ex) {
+                JOptionPane.showMessageDialog(null, "Error playing section: " + ex.getMessage());
+            }
+        }
+    }//GEN-LAST:event_btnSectionPlayRealTimeActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditTracks;
     private javax.swing.JButton btnSectionApply;
     private javax.swing.JButton btnSectionPlay;
+    private javax.swing.JButton btnSectionPlayRealTime;
     private javax.swing.JCheckBox chkSectionInterruptTracks;
     private javax.swing.JComboBox<String> comboSectionType;
     private javax.swing.JLabel jLabel2;

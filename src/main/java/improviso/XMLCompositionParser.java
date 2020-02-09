@@ -52,7 +52,7 @@ public class XMLCompositionParser {
         }
         composition = new Composition(offset, randomSeed);
 
-        Document aliasXMLDocument = dBuilder.parse(dBuilder.getClass().getResourceAsStream("/GMDrumsAliases.xml"));
+        Document aliasXMLDocument = dBuilder.parse(getClass().getClassLoader().getResourceAsStream("GMDrumsAliases.xml"));
         aliasXMLDocument.normalizeDocument();
         NodeList aliasList = aliasXMLDocument.getElementsByTagName("alias");
         for (int index = 0; index < aliasList.getLength(); index++) {
@@ -192,7 +192,7 @@ public class XMLCompositionParser {
             builder.setFinishedSignal(new GroupSignal(Integer.parseInt(element.getAttribute("minExecutionsSignal")), Integer.parseInt(element.getAttribute("maxExecutionsSignal")), Double.parseDouble(element.getAttribute("probabilitySignal"))));
         }
         if (element.hasAttribute("minExecutionsFinish")) {
-            builder.setInterruptSignal(new GroupSignal(Integer.parseInt(element.getAttribute("minExecutionsFinish")), Integer.parseInt(element.getAttribute("probabilityFinish")), Double.parseDouble(element.getAttribute("probabilityFinish"))));
+            builder.setInterruptSignal(new GroupSignal(Integer.parseInt(element.getAttribute("minExecutionsFinish")), Integer.parseInt(element.getAttribute("maxExecutionsFinish")), Double.parseDouble(element.getAttribute("probabilityFinish"))));
         }
         return builder.build();
     }

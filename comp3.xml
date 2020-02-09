@@ -68,7 +68,7 @@
         <drumTrack>
             <drumGroup1 type="sequence">
                 <drumGroup1part1 pattern="drumLoop" />
-                <drumGroup1part2 pattern="drumLoop" minExecutionsFinish="0" maxExecutionsFinish="0" probabilityFinish="1" />
+                <drumGroup1part2 pattern="drumLoop" minExecutionsFinish="0" maxExecutionsFinish="5" probabilityFinish="0.2" />
             </drumGroup1>
         </drumTrack>
     </trackList>
