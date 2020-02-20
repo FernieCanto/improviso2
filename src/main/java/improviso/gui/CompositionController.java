@@ -92,4 +92,10 @@ public class CompositionController {
     void setDeviceInfo(MidiDevice.Info midiInfo) throws MidiUnavailableException {
         this.midiDevice = MidiSystem.getMidiDevice(midiInfo);
     }
+
+    void saveMIDI(String absolutePath) throws FileNotFoundException, InvalidMidiDataException, IOException, ImprovisoException, MidiUnavailableException {
+        MIDIGenerator generator = new MIDIGenerator(midiDevice);
+        this.composition.execute(generator);
+        generator.generateFile(absolutePath);
+    }
 }

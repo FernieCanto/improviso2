@@ -93,4 +93,76 @@ public class NoteTest extends ImprovisoTest {
         assertFalse(result.isEmpty());
         assertEquals(32, result.get(0).getPitch());
     }
+    
+    @Test
+    public void testGenerateFixedNoteAfterRange() {
+        Note noteDef = new Note.NoteBuilder()
+                .setPitch(30)
+                .setStart(getIntegerRangeMock(50))
+                .setLength(getIntegerRangeMock(50))
+                .build();
+        MIDINoteList resultNoNote = noteDef.executeRange(getRandomMock(), 0, 49, 100, 1.0, 100);
+        assertTrue(resultNoNote.isEmpty());
+    }
+    
+    @Test
+    public void testGenerateFixedNoteInsideRange() {
+        Note noteDef = new Note.NoteBuilder()
+                .setPitch(30)
+                .setStart(getIntegerRangeMock(50))
+                .setLength(getIntegerRangeMock(50))
+                .build();
+        MIDINoteList result = noteDef.executeRange(getRandomMock(), 0, 50, 100, 1.0, 100);
+        assertFalse(result.isEmpty());
+        assertEquals(30, result.get(0).getPitch());
+        assertEquals(50, result.get(0).getStart());
+        assertEquals(50, result.get(0).getLength());
+    }
+    
+    @Test
+    public void testGenerateFixedNoteBeforeRange() {
+        Note noteDef = new Note.NoteBuilder()
+                .setPitch(30)
+                .setStart(getIntegerRangeMock(50))
+                .setLength(getIntegerRangeMock(50))
+                .build();
+        MIDINoteList resultNoNote = noteDef.executeRange(getRandomMock(), 51, 100, 100, 1.0, 100);
+        assertTrue(resultNoNote.isEmpty());
+    }
+    
+    @Test
+    public void testGenerateRelativeNoteAfterRange() {
+        Note noteDef = new Note.NoteBuilder()
+                .setPitch(30)
+                .setStart(getDoubleRangeMock(0.5))
+                .setLength(getDoubleRangeMock(0.5))
+                .build();
+        MIDINoteList resultNoNote = noteDef.executeRange(getRandomMock(), 0, 49, 100, 1.0, 100);
+        assertTrue(resultNoNote.isEmpty());
+    }
+    
+    @Test
+    public void testGenerateRelativeNoteInsideRange() {
+        Note noteDef = new Note.NoteBuilder()
+                .setPitch(30)
+                .setStart(getDoubleRangeMock(0.5))
+                .setLength(getDoubleRangeMock(0.5))
+                .build();
+        MIDINoteList result = noteDef.executeRange(getRandomMock(), 0, 50, 100, 1.0, 100);
+        assertFalse(result.isEmpty());
+        assertEquals(30, result.get(0).getPitch());
+        assertEquals(50, result.get(0).getStart());
+        assertEquals(50, result.get(0).getLength());
+    }
+    
+    @Test
+    public void testGenerateRelativeNoteBeforeRange() {
+        Note noteDef = new Note.NoteBuilder()
+                .setPitch(30)
+                .setStart(getDoubleRangeMock(0.5))
+                .setLength(getDoubleRangeMock(0.5))
+                .build();
+        MIDINoteList resultNoNote = noteDef.executeRange(getRandomMock(), 51, 100, 100, 1.0, 100);
+        assertTrue(resultNoNote.isEmpty());
+    }
 }

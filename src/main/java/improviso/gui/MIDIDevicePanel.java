@@ -5,9 +5,16 @@
  */
 package improviso.gui;
 
+import improviso.ImprovisoException;
+import java.awt.Dimension;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
@@ -42,6 +49,7 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         deviceList = new javax.swing.JList<>();
+        btnSaveMIDI = new javax.swing.JButton();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("MIDI Devices"));
 
@@ -64,6 +72,13 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(deviceList);
 
+        btnSaveMIDI.setText("Save MIDI file");
+        btnSaveMIDI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveMIDIActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -78,7 +93,8 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(labelSelectedDevice))
-                            .addComponent(jLabel3))
+                            .addComponent(jLabel3)
+                            .addComponent(btnSaveMIDI))
                         .addGap(0, 499, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -93,7 +109,9 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(229, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
+                .addComponent(btnSaveMIDI)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -123,8 +141,31 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_deviceListValueChanged
 
+    private void btnSaveMIDIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveMIDIActionPerformed
+        if (controller.isCompositionLoaded()) {
+            try {
+                final JFileChooser fc = new JFileChooser();
+                fc.setPreferredSize(new Dimension(1200, 800));
+                fc.setCurrentDirectory(new File("."));
+                if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                    controller.saveMIDI(fc.getSelectedFile().getAbsolutePath());
+                }
+            } catch (IOException ex) {
+                System.out.println(ex);
+                JOptionPane.showMessageDialog(this, "Error saving composition: " + ex.getMessage());
+            } catch (InvalidMidiDataException ex) {
+                Logger.getLogger(MIDIDevicePanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ImprovisoException ex) {
+                Logger.getLogger(MIDIDevicePanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (MidiUnavailableException ex) {
+                Logger.getLogger(MIDIDevicePanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_btnSaveMIDIActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnSaveMIDI;
     private javax.swing.JList<String> deviceList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;

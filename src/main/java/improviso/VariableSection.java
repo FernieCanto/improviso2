@@ -23,7 +23,7 @@ public class VariableSection extends Section {
     }
     
     @Override
-    protected SectionEnd initialize(Random random) throws ImprovisoException {
+    protected SectionEnd getSectionEnd(Random random) throws ImprovisoException {
         displayMessage("INITIALIZING");
         return new UnknownSectionEnd();
     }

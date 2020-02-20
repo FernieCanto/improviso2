@@ -27,5 +27,13 @@ public class PatternExecution {
         });
         return noteList;
     }
+
+    public MIDINoteList executeRange(Random random, int patternStart, int patternEnd, double finalPosition, int length) {
+        MIDINoteList noteList = new MIDINoteList();
+        this.pattern.getNoteIterator().forEachRemaining((note) -> {
+            noteList.addAll(note.executeRange(random, patternStart, patternEnd, this.length, finalPosition, length));
+        });
+        return noteList;
+    }
     
 }

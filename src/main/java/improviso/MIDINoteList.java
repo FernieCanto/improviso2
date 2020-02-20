@@ -25,4 +25,14 @@ public class MIDINoteList extends ArrayList<MIDINote> {
         });
         return newList;
     }
+
+    public MIDINoteList trimNotesAfterEnd(Section.SectionEnd newEnd) {
+        MIDINoteList newList = new MIDINoteList();
+        this.forEach((note) -> {
+            if (note.getStart() < newEnd.intValue()) {
+                newList.add(note);
+            }
+        });
+        return newList;
+    }
 }

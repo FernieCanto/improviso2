@@ -155,10 +155,6 @@ public class MIDIGenerator {
                         
                         long currentPosition = startingInstant.until(Instant.now(), MICROS);
                         
-                        System.out.println("Device time: " + this.midiDevice.getMicrosecondPosition());
-                        System.out.println("Curent time: " + currentPosition);
-                        System.out.println("Event time: " + eventTimeInMicroseconds);
-                        
                         if((this.midiDevice.getMicrosecondPosition() - initialDevicePosition) >= eventTimeInMicroseconds) {
                             receiver.send(evento.getMessage(), 0);
                             nextEvent[trackIdx]++;

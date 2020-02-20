@@ -1,9 +1,10 @@
 package improviso;
 import java.util.*;
 import java.io.*;
-import java.util.regex.Matcher;
 import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.ShortMessage;
 
 
 /**
@@ -18,29 +19,29 @@ import javax.sound.midi.MidiUnavailableException;
  * @author Fernie Canto
  */
 public class Composition implements java.io.Serializable {
-    final private static java.util.regex.Pattern NOTE_NAME_PATTERN = java.util.regex.Pattern.compile("^([A-G])([#b])?(-2|-1|\\d)$");
-    final private HashMap<Character, Integer> noteMap;
     /**
      * The number of ticks in a whole note, used for reference when calculating
      * durations and positions of notes.
      */
-    public static final int TICKS_WHOLENOTE = 480;
+    final public static int TICKS_WHOLENOTE = 480;
     
-    final private ElementLibrary elementLibrary = new ElementLibrary();
     /**
      * List of MIDI tracks that shall be present in the MIDI file.
      */
     final private MIDITrackList MIDITracks = new MIDITrackList();
+    
     /**
      * Map of all the sections in the composition.
      */
     final private LinkedHashMap<String, Section> sections = new LinkedHashMap<>();
+    
     /**
      * List of Arrows that point to the possible initial Sections of the
      * composition. One of these will be chosen when the composition is
      * executed.
      */
     final private ArrowList initialSections = new ArrowList();
+    
     /**
      * Map of the lists of Arrows that point out of each Section.
      */
@@ -57,13 +58,11 @@ public class Composition implements java.io.Serializable {
     public Composition(Integer offset) {
         this.offset = offset;
         this.randomSeed = null;
-        this.noteMap = createNoteNumberMap();
     }
     
     public Composition(Integer offset, Long randomSeed) {
         this.offset = offset;
         this.randomSeed = randomSeed;
-        this.noteMap = createNoteNumberMap();
     }
     
     public static String showBeatsAndTicks(int ticks) {
@@ -72,64 +71,7 @@ public class Composition implements java.io.Serializable {
         
         return beats+":"+remTicks;
     }
-    
-    public ElementLibrary getElementLibrary() {
-        return this.elementLibrary;
-    }
-    
-    private HashMap<Character, Integer> createNoteNumberMap() {
-        HashMap<Character, Integer> map = new HashMap<>();
-        map.put('C', 0);
-        map.put('D', 2);
-        map.put('E', 4);
-        map.put('F', 5);
-        map.put('G', 7);
-        map.put('A', 9);
-        map.put('B', 11);
-        return map;
-    }
-    
-    /**
-     * Produces the MIDI note number corresponding to the note name. Note names
-     * have to include a letter from A to G, an optional accidental ("b" for
-     * flat or "#" for sharp) and the octave number. Additionally, the note name
-     * can be an alias included in the composition file.
-     * @param stringNoteName The note name to be interpreted
-     * @return The numerical value of the note
-     * @throws ImprovisoException 
-     */
-    public int interpretNoteName(String stringNoteName)
-        throws ImprovisoException {
-        Matcher noteMatcher = NOTE_NAME_PATTERN.matcher(stringNoteName);
         
-        if(elementLibrary.hasNoteAlias(stringNoteName)) {
-            return elementLibrary.getNoteAlias(stringNoteName);
-        } else if(noteMatcher.matches()) {
-            int note = this.noteMap.get(noteMatcher.group(1).charAt(0));
-            if(noteMatcher.group(2) != null) {
-                if(noteMatcher.group(2).equals("b")) {
-                    note--;
-                } else{
-                    note++;
-                }
-            }
-
-            if(!noteMatcher.group(3).equals("-2")) {
-                int octave = Integer.parseInt(noteMatcher.group(3));
-                note += (octave+2) * 12;
-            }
-            return note;
-        } else {
-            try {
-                return Integer.parseInt(stringNoteName);
-            } catch(NumberFormatException e) {
-                ImprovisoException exception = new ImprovisoException("Invalid note name: "+stringNoteName);
-                exception.addSuppressed(e);
-                throw exception;
-            }
-        }
-    }
-    
     /**
      * Adds a MIDITrack to the composition.
      * @param track 
@@ -237,6 +179,43 @@ public class Composition implements java.io.Serializable {
                 currentSectionId = null;
             }
         } while(currentSectionId != null);
+    }
+    
+    public ArrayList<MidiEvent> executeTicks(MIDIGenerator generator, int ticks) throws ImprovisoException, InvalidMidiDataException {
+        String currentSectionId;
+        this.initialSections.initialize();
+        this.sectionDestinations.forEach((sectionId, arrowList) -> {
+            arrowList.initialize();
+        });
+        Random random = this.getRandom();
+        
+        if(initialSections.getNumArrows() > 0) {
+            currentSectionId = initialSections.getNextDestination(random);
+        } else if (!sections.isEmpty()) {
+            currentSectionId = sections.keySet().iterator().next();
+        } else {
+            throw new ImprovisoException("Composition has no starting sections");
+        }
+        
+        Section currentSection = sections.get(currentSectionId);
+        MIDINoteList list = currentSection.executeTicks(random, ticks);
+        
+        ArrayList<MidiEvent> events = new ArrayList<>();
+        list.forEach((MIDINote note) -> {
+            try {
+                ShortMessage noteOnMessage = new ShortMessage();
+                noteOnMessage.setMessage(ShortMessage.NOTE_ON, MIDITracks.get(note.getMIDITrack() - 1).getChannel(), note.getPitch(), note.getVelocity());
+                events.add(new MidiEvent(noteOnMessage, note.getStart()));
+
+                ShortMessage noteOffMessage = new ShortMessage();
+                noteOffMessage.setMessage(ShortMessage.NOTE_OFF, MIDITracks.get(note.getMIDITrack() - 1).getChannel(), note.getPitch(), note.getVelocity());
+                events.add(new MidiEvent(noteOffMessage, note.getStart() + note.getLength()));
+            } catch(InvalidMidiDataException e) {
+                
+            }
+        });
+        
+        return events;
     }
     
     /**

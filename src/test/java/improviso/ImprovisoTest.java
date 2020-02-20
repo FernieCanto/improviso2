@@ -54,4 +54,8 @@ abstract public class ImprovisoTest {
     protected Group getGroupMock(PatternExecution execution) {
         return getGroupMock(execution, mock(GroupMessage.class));
     }
+    
+    protected Track getTrackMock() {
+        return mock(Track.class);
+    }
 }

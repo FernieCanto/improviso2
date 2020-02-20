@@ -21,6 +21,9 @@ public abstract class Section implements java.io.Serializable {
     
     final private ArrayList<Track> tracks;
     
+    private int currentRealTimePosition = 0;
+    private SectionEnd currentSectionEnd;
+    
     public abstract static class SectionBuilder {
         private String id;
         private Integer tempo = 120;
@@ -202,6 +205,14 @@ public abstract class Section implements java.io.Serializable {
         
         return ids;
     }
+
+    public void initialize(Random random) throws ImprovisoException {
+        currentRealTimePosition = 0;
+        currentSectionEnd = this.getSectionEnd(random);
+        this.tracks.forEach((track) -> {
+            track.initialize(random);
+        });
+    }
     
     /**
      * Executes the Section, returning the list of all notes produced by all
@@ -216,34 +227,73 @@ public abstract class Section implements java.io.Serializable {
             throw new ImprovisoException("Trying to execute section with no tracks");
         }
         
-        this.tracks.forEach((track) -> {
-            track.initialize(random);
-        });
-        
+        this.initialize(random);
         MIDINoteList notes = new MIDINoteList();
-        SectionEnd end = this.initialize(random);
         
-        while(this.sectionNotFinished(end)) {
-            Track selectedTrack = this.selectNextTrack(end);
+        while(this.sectionNotFinished(currentSectionEnd)) {
+            Track selectedTrack = this.selectNextTrack(currentSectionEnd);
             
             displayMessage("Executing " + selectedTrack.getId() + " @ " + selectedTrack.getCurrentPosition());
             
             notes.addAll(selectedTrack.execute(
                     random,
-                    end,
+                    currentSectionEnd,
                     this.interruptTracks,
                     this.calculatePatternPosition()
             ));
             SectionEnd newEnd = this.processTrackMessage(selectedTrack);
-            if (end.compareTo(newEnd) == 1) {
-                end = newEnd;
+            if (currentSectionEnd.compareTo(newEnd) == 1) {
+                currentSectionEnd = newEnd;
             }
             
             displayMessage("  Executed " + selectedTrack.getId() + " now @ " + selectedTrack.getCurrentPosition());
-            displayMessage("  Section @ " + this.getCurrentPosition() + ", end @ " + end.toString());
+            displayMessage("  Section @ " + this.getCurrentPosition() + ", end @ " + currentSectionEnd.toString());
         }
         
         return notes;
+    }
+
+    public MIDINoteList executeTicks(Random random, int ticks) throws ImprovisoException {
+        if (this.tracks.isEmpty()) {
+            throw new ImprovisoException("Trying to execute section with no tracks");
+        }
+        
+        MIDINoteList notes = new MIDINoteList();
+        SectionEnd newEnd = this.currentSectionEnd;
+        
+        final int actualTicks;
+        if (currentRealTimePosition + ticks > this.currentSectionEnd.intValue()) {
+            actualTicks = this.currentSectionEnd.intValue() - currentRealTimePosition;
+        } else {
+            actualTicks = ticks;
+        }
+        
+        for (Track track : this.tracks) {
+            notes.addAll(track.executeTicks(
+                random,
+                this.currentSectionEnd,
+                actualTicks,
+                this.interruptTracks,
+                this.calculatePatternPosition()
+            ));
+            SectionEnd currentTrackEnd = this.processTrackMessage(track);
+            if (currentTrackEnd.compareTo(newEnd) == -1) {
+                newEnd = currentTrackEnd;
+            }
+        };
+        MIDINoteList newNotes = notes.trimNotesAfterEnd(newEnd);
+        currentRealTimePosition += actualTicks;
+        this.currentSectionEnd = newEnd;
+        
+        return newNotes;
+    }
+    
+    public boolean isFinished() {
+        return this.currentSectionEnd.endIsKnown() && this.currentSectionEnd.intValue() <= this.currentRealTimePosition; // ???
+    }
+    
+    public int getCurrentRealTimePosition() {
+        return this.currentSectionEnd.intValue();
     }
     
     private boolean sectionNotFinished(SectionEnd end) {
@@ -288,7 +338,7 @@ public abstract class Section implements java.io.Serializable {
     
     abstract protected boolean calculatePatternPosition();
     
-    abstract protected SectionEnd initialize(Random random) throws ImprovisoException;
+    abstract protected SectionEnd getSectionEnd(Random random) throws ImprovisoException;
     
     /**
      * Process and interpret the Message received by the executed Track, updating

@@ -7,23 +7,10 @@ import java.util.HashMap;
  * @author Fernie Canto
  */
 public class ElementLibrary implements java.io.Serializable {
-    private final HashMap<String, Integer> noteAliases = new HashMap<>();
     private final HashMap<String, Pattern> patterns = new HashMap<>();
     private final HashMap<String, Group> groups = new HashMap<>();
     private final HashMap<String, Track> tracks = new HashMap<>();
     private final HashMap<String, Section> sections = new HashMap<>();
-    
-    public void addNoteAlias(String id, Integer n) {
-        this.noteAliases.put(id, n);
-    }
-    
-    public boolean hasNoteAlias(String id) {
-        return this.noteAliases.containsKey(id);
-    }
-    
-    public Integer getNoteAlias(String id) {
-        return this.noteAliases.get(id);
-    }
     
     public void addPattern(String id, Pattern p) {
         this.patterns.put(id, p);

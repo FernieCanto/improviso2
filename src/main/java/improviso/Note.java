@@ -273,24 +273,24 @@ public class Note implements java.io.Serializable {
      * resulting MIDINoteList may be empty or contain exactly one MIDINote.
      * @param random The random object
      * @param patternLength The actual length of the pattern being executed
-     * @param position The position of the pattern in relation to the section
+     * @param positionInSection The position of the pattern in relation to the section
      * that is being currently executed.
      * @param maximumLength The maximum length of the pattern, as defined by
      * the section. If this pattern is being cut short by the section, the note
      * will be cut short or not generated at all.
      * @return A list containing zero or one MIDINote.
      */
-    public MIDINoteList execute(Random random, int patternLength, double position, int maximumLength) {
+    public MIDINoteList execute(Random random, int patternLength, double positionInSection, int maximumLength) {
         if(random.nextDouble() > this.probability) {
             return new MIDINoteList();
         }
         
-        int noteStart = this.positionStart.calculate(random, position, patternLength);
+        int noteStart = this.positionStart.calculate(random, positionInSection, patternLength);
         if (noteStart > maximumLength) {
             return new MIDINoteList();
         }
         
-        int noteLength = this.positionLength.calculate(random, position, patternLength);
+        int noteLength = this.positionLength.calculate(random, positionInSection, patternLength);
         if(noteStart + noteLength > maximumLength) {
             noteLength = maximumLength - noteStart;
         }
@@ -299,8 +299,33 @@ public class Note implements java.io.Serializable {
                 getTransposedPitch(random),
                 noteStart,
                 noteLength,
-                this.velocity.getValue(random, position),
+                this.velocity.getValue(random, positionInSection),
                 this.MIDITrack
         ));
+    }
+
+    /**
+     * Generates a MIDINote according to the parameters of the note, as long
+     * as it resides within a specified range inside the pattern. Depending
+     * on the probability and on the maximum length of the pattern, the
+     * resulting MIDINoteList may be empty or contain exactly one MIDINote.
+     * @param random The random object
+     * @param patternStart The starting position of the chunk of the pattern that's being executed at the moment.
+     * @param patternEnd The ending position of the chunk of the pattern that's being executed at the moment.
+     * @param patternLength The actual length of the entire pattern being executed
+     * @param positionInSection The position of the pattern in relation to the section
+     * that is being currently executed.
+     * @param maximumLength The maximum length of the pattern, as defined by
+     * the section. If this pattern is being cut short by the section, the note
+     * will be cut short or not generated at all.
+     * @return A list containing zero or one MIDINote.
+     */
+    MIDINoteList executeRange(Random random, int patternStart, int patternEnd, int patternLength, double positionInSection, int maximumLength) {
+        int noteStart = this.positionStart.calculate(random, positionInSection, patternLength);
+        if (noteStart >= patternStart && noteStart <= patternEnd) {
+            return this.execute(random, patternLength, positionInSection, maximumLength);
+        } else {
+            return new MIDINoteList();
+        }
     }
 }

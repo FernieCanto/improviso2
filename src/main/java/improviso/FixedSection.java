@@ -43,7 +43,7 @@ public class FixedSection extends Section {
     }
     
     @Override
-    protected SectionEnd initialize(Random random) throws ImprovisoException {
+    protected SectionEnd getSectionEnd(Random random) throws ImprovisoException {
         return SectionEnd.createEnd(this.length.getValue(random));
     }
     

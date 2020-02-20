@@ -1,5 +1,6 @@
 package improviso;
 
+import java.util.Random;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -196,5 +197,128 @@ public class VariableSectionTest extends ImprovisoTest {
         verify(execution2, times(2)).execute(getRandomMock(), 0.0d, Integer.MAX_VALUE); // 300 - 600
         verify(execution2, times(1)).execute(getRandomMock(), 0.0d, 200); // - 800
         assertEquals(800, section.getActualEnd());
+    }
+    
+    @Test
+    public void testExecuteVariableSectionTwoTrackInterruptRealTime() throws ImprovisoException {
+        Track track1 = getTrackMock();
+        Track track2 = getTrackMock();
+        
+        Random rand = getRandomMock();
+        
+        MIDINote list1_1[] = {new MIDINote(1, 0, 10, 100, 1), new MIDINote(1, 200, 10, 100, 1)};
+        MIDINote list1_2[] = {new MIDINote(1, 250, 10, 100, 1), new MIDINote(1, 401, 10, 100, 1)};
+        when(track1.executeTicks(eq(rand), any(Section.SectionEnd.class), eq(250), eq(true), eq(false))).thenReturn(
+                new MIDINoteList(list1_1),
+                new MIDINoteList(list1_2)
+        );
+        when(track1.getPositionFinished()).thenReturn(null);
+        when(track1.getPositionInterrupt()).thenReturn(null);
+        
+        MIDINote list2_1[] = {new MIDINote(1, 0, 10, 100, 1), new MIDINote(1, 100, 10, 100, 1)};
+        MIDINote list2_2[] = {new MIDINote(1, 250, 10, 100, 1), new MIDINote(1, 399, 10, 100, 1)};
+        when(track2.executeTicks(eq(rand), any(Section.SectionEnd.class), eq(250), eq(true), eq(false))).thenReturn(
+                new MIDINoteList(list2_1),
+                new MIDINoteList(list2_2)
+        );
+        when(track2.getPositionFinished()).thenReturn(null);
+        when(track2.getPositionInterrupt()).thenReturn(null, 400);
+        
+        VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
+        sectionBuilder.setId("sectionTest").setTempo(100);
+        sectionBuilder.addTrack(track1);
+        sectionBuilder.addTrack(track2);
+        sectionBuilder.setInterruptTracks(true);
+        VariableSection section = sectionBuilder.build();
+        section.initialize(rand);
+        
+        MIDINoteList list1 = section.executeTicks(rand, 250);
+        assertEquals(4, list1.size());
+        assertEquals(  0, list1.get(0).getStart());
+        assertEquals(200, list1.get(1).getStart());
+        assertEquals(  0, list1.get(2).getStart());
+        assertEquals(100, list1.get(3).getStart());
+        assertFalse(section.isFinished());
+        
+        MIDINoteList list2 = section.executeTicks(rand, 250);
+        assertEquals(3, list2.size());
+        assertEquals(250, list2.get(0).getStart());
+        assertEquals(250, list2.get(1).getStart());
+        assertEquals(399, list2.get(2).getStart());
+        assertTrue(section.isFinished());
+        assertEquals(400, section.getCurrentRealTimePosition());
+    }
+    
+    @Test
+    public void testExecuteVariableSectionThreeTrackFinishRealTime() throws ImprovisoException {
+        Track track1 = getTrackMock();
+        Track track2 = getTrackMock();
+        Track track3 = getTrackMock();
+        
+        Random rand = getRandomMock();
+        
+        MIDINote list1_1[] = {new MIDINote(1,   0, 10, 100, 1), new MIDINote(1, 150, 10, 100, 1)};
+        MIDINote list1_2[] = {new MIDINote(1, 300, 10, 100, 1)};
+        MIDINote list1_3[] = {new MIDINote(1, 550, 10, 100, 1), new MIDINote(1, 740, 10, 100, 1)};
+        when(track1.executeTicks(eq(rand), any(Section.SectionEnd.class), anyInt(), eq(true), eq(false))).thenReturn(
+                new MIDINoteList(list1_1),
+                new MIDINoteList(list1_2),
+                new MIDINoteList(list1_3)
+        );
+        when(track1.getPositionFinished()).thenReturn(0, 200, 200);
+        when(track1.getPositionInterrupt()).thenReturn(null);
+        
+        MIDINote list2_1[] = {new MIDINote(2,   0, 10, 100, 2)};
+        MIDINote list2_2[] = {new MIDINote(2, 250, 10, 100, 2)};
+        MIDINote list2_3[] = {new MIDINote(2, 650, 10, 100, 2)};
+        when(track2.executeTicks(eq(rand), any(Section.SectionEnd.class), anyInt(), eq(true), eq(false))).thenReturn(
+                new MIDINoteList(list2_1),
+                new MIDINoteList(list2_2),
+                new MIDINoteList(list2_3)
+        );
+        when(track2.getPositionFinished()).thenReturn(600, 600, 600);
+        when(track2.getPositionInterrupt()).thenReturn(null);
+        
+        MIDINote list3_1[] = {new MIDINote(3,  10, 10, 100, 3)};
+        MIDINote list3_2[] = {new MIDINote(3, 260, 10, 100, 3)};
+        MIDINote list3_3[] = {new MIDINote(3, 500, 10, 100, 3)};
+        when(track3.executeTicks(eq(rand), any(Section.SectionEnd.class), anyInt(), eq(true), eq(false))).thenReturn(
+                new MIDINoteList(list3_1),
+                new MIDINoteList(list3_2),
+                new MIDINoteList(list3_3)
+        );
+        when(track3.getPositionFinished()).thenReturn(0, 0, 550);
+        when(track3.getPositionInterrupt()).thenReturn(null);
+        
+        VariableSection.VariableSectionBuilder sectionBuilder = new VariableSection.VariableSectionBuilder();
+        sectionBuilder.setId("sectionTest").setTempo(100);
+        sectionBuilder.addTrack(track1);
+        sectionBuilder.addTrack(track2);
+        sectionBuilder.addTrack(track3);
+        sectionBuilder.setInterruptTracks(true);
+        VariableSection section = sectionBuilder.build();
+        section.initialize(rand);
+        
+        MIDINoteList list1 = section.executeTicks(rand, 250);
+        assertEquals(4, list1.size());
+        assertEquals(  0, list1.get(0).getStart());
+        assertEquals(150, list1.get(1).getStart());
+        assertEquals(  0, list1.get(2).getStart());
+        assertEquals( 10, list1.get(3).getStart());
+        assertFalse(section.isFinished());
+        
+        MIDINoteList list2 = section.executeTicks(rand, 250);
+        assertEquals(3, list2.size());
+        assertEquals(300, list2.get(0).getStart());
+        assertEquals(250, list2.get(1).getStart());
+        assertEquals(260, list2.get(2).getStart());
+        assertFalse(section.isFinished());
+        
+        MIDINoteList list3 = section.executeTicks(rand, 250);
+        assertEquals(2, list3.size());
+        assertEquals(550, list3.get(0).getStart());
+        assertEquals(500, list3.get(1).getStart());
+        assertTrue(section.isFinished());
+        assertEquals(600, section.getCurrentRealTimePosition());
     }
 }

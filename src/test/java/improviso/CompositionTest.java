@@ -8,7 +8,10 @@ package improviso;
 import java.io.IOException;
 import java.util.*;
 import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.ShortMessage;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.*;
@@ -55,29 +58,29 @@ public class CompositionTest {
     
     @Test
     public void testInterpretNoteNames() throws ImprovisoException {
-        Composition composition = new Composition(0);
-        composition.getElementLibrary().addNoteAlias("alias", 15);
+        NoteNameInterpreter interpreter = new NoteNameInterpreter();
+        interpreter.addNoteAlias("alias", 15);
         
-        long note1 = composition.interpretNoteName("D#2");
+        long note1 = interpreter.interpretNoteName("D#2");
         assertEquals(51, note1);
         
-        long note2 = composition.interpretNoteName("Gb1");
+        long note2 = interpreter.interpretNoteName("Gb1");
         assertEquals(42, note2);
         
-        long note3 = composition.interpretNoteName("C-2");
+        long note3 = interpreter.interpretNoteName("C-2");
         assertEquals(0, note3);
         
-        long note4 = composition.interpretNoteName("50");
+        long note4 = interpreter.interpretNoteName("50");
         assertEquals(50, note4);
         
-        long note5 = composition.interpretNoteName("alias");
+        long note5 = interpreter.interpretNoteName("alias");
         assertEquals(15, note5);
     }
     
     @Test(expected = ImprovisoException.class)
     public void testInterpretNoteError() throws ImprovisoException {
-        Composition composition = new Composition(0);
-        composition.interpretNoteName("error");
+        NoteNameInterpreter interpreter = new NoteNameInterpreter();
+        interpreter.interpretNoteName("error");
     }
     
     @Test
@@ -199,5 +202,71 @@ public class CompositionTest {
         assertEquals(1400, argumentNotes3.getValue().get(1).getStart());
         assertEquals(1500, argumentNotes3.getValue().get(2).getStart());
         assertEquals(1600, argumentNotes3.getValue().get(3).getStart());
+    }
+    
+    @Test
+    public void testCompositionTwoSectionsRealTime() throws ImprovisoException, InvalidMidiDataException, IOException, MidiUnavailableException {
+        MIDINote[] notes1 = {
+            new MIDINote(20,   0, 100, 100, 1),
+            new MIDINote(25, 100, 100, 100, 1),
+        };
+        MIDINote[] notes2 = {
+            new MIDINote(30, 250, 100, 100, 1),
+            new MIDINote(35, 300, 100, 100, 1),
+        };
+        MIDINote[] notes3 = {
+            new MIDINote(40, 500, 100, 100, 1),
+        };
+        
+        FixedSection section1 = mock(FixedSection.class);
+        when(section1.getTempo()).thenReturn(120);
+        when(section1.executeTicks(any(Random.class), eq(250))).thenReturn(
+                new MIDINoteList(notes1),
+                new MIDINoteList(notes2),
+                new MIDINoteList(notes3)
+        );
+        when(section1.isFinished()).thenReturn(false, false, true);
+        when(section1.getCurrentRealTimePosition()).thenReturn(250, 500, 570);
+        
+        Composition composition = new Composition(100);
+        composition.addMIDITrack(new MIDITrack(1, 0, 100, 64));
+        composition.addSection("section1", section1);
+        composition.addArrow(null, new Arrow.ArrowBuilder()
+                .setDestinationSection("section1")
+                .setMaxExecutions(1)
+                .build()
+        );
+        
+        MIDIGenerator generator = mock(MIDIGenerator.class);
+        List<MidiEvent> events = composition.executeTicks(generator, 250);
+        assertEquals(4, events.size());
+        
+        assertEquals(  0, events.get(0).getTick());
+        ShortMessage message1 = (ShortMessage)events.get(0).getMessage();
+        assertEquals(ShortMessage.NOTE_ON, message1.getCommand());
+        assertEquals(1, message1.getChannel());
+        assertEquals(20, message1.getData1());
+        assertEquals(100, message1.getData2());
+        
+        assertEquals(100, events.get(1).getTick());
+        ShortMessage message2 = (ShortMessage)events.get(1).getMessage();
+        assertEquals(ShortMessage.NOTE_OFF, message2.getCommand());
+        assertEquals(1, message2.getChannel());
+        assertEquals(20, message2.getData1());
+        assertEquals(100, message2.getData2());
+        
+        assertEquals(100, events.get(2).getTick());
+        ShortMessage message3 = (ShortMessage)events.get(2).getMessage();
+        assertEquals(ShortMessage.NOTE_ON, message3.getCommand());
+        assertEquals(1, message3.getChannel());
+        assertEquals(25, message3.getData1());
+        assertEquals(100, message3.getData2());
+        
+        assertEquals(200, events.get(3).getTick());
+        ShortMessage message4 = (ShortMessage)events.get(3).getMessage();
+        assertEquals(ShortMessage.NOTE_OFF, message4.getCommand());
+        assertEquals(1, message4.getChannel());
+        assertEquals(25, message4.getData1());
+        assertEquals(100, message4.getData2());
     }
 }

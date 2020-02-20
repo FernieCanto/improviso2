@@ -12,7 +12,10 @@ public class Track implements java.io.Serializable {
     private final Group rootGroup;
     
     private PatternExecution currentExecution;
+    private GroupMessage message;
     private int currentPosition;
+    private int currentRealTimePosition;
+    private int currentPositionInPattern;
     
     private Integer positionFinished = null;
     private Integer positionInterrupt = null;
@@ -60,10 +63,12 @@ public class Track implements java.io.Serializable {
      */
     public void initialize(Random random) {
         this.currentPosition = 0;
+        this.currentRealTimePosition = 0;
+        this.currentPositionInPattern = 0;
         this.rootGroup.resetGroup();
         this.positionFinished = null;
         this.positionInterrupt = null;
-        this.currentExecution = this.getNextPatternExecution(random);
+        this.getNextPatternExecution(random);
     }
     
     /**
@@ -72,8 +77,9 @@ public class Track implements java.io.Serializable {
      * returned
      * @param rand
      */
-    private PatternExecution getNextPatternExecution(Random rand) {
-        return this.rootGroup.execute(rand);
+    private void getNextPatternExecution(Random rand) {
+        this.currentExecution = this.rootGroup.execute(rand);
+        this.message = this.rootGroup.getMessage();
     }
     
     /**
@@ -84,8 +90,12 @@ public class Track implements java.io.Serializable {
         return this.currentPosition;
     }
     
+    public int getCurrentRealTimePosition() {
+        return this.currentRealTimePosition;
+    }
+    
     public GroupMessage getMessage() {
-        return this.rootGroup.getMessage();
+        return this.message;
     }
     
     /**
@@ -112,7 +122,7 @@ public class Track implements java.io.Serializable {
      * @param sectionEnd
      * @param interruptTracks
      * @param calculatePatternPosition
-     * @return Sequência de noteDefinitions geradas.
+     * @return List of generated note definitions.
      */
     public MIDINoteList execute(Random random, Section.SectionEnd sectionEnd, boolean interruptTracks, boolean calculatePatternPosition) {
         MIDINoteList result = this.currentExecution.execute(
@@ -126,17 +136,47 @@ public class Track implements java.io.Serializable {
         }
         
         this.processMessage();
-        this.currentExecution = this.getNextPatternExecution(random);
+        this.getNextPatternExecution(random);
         
+        return result;
+    }
+
+    public MIDINoteList executeTicks(Random random, Section.SectionEnd sectionEnd, int ticks, boolean interruptTracks, boolean calculatePatternPosition) {
+        int remainingTicks = ticks;
+        MIDINoteList result = new MIDINoteList();
+        
+        while (remainingTicks > 0) {
+            MIDINoteList list = this.currentExecution.executeRange(
+                    random,
+                    this.currentPositionInPattern,
+                    this.currentPositionInPattern + remainingTicks - 1,
+                    calculatePatternPosition ? this.getRelativePatternPosition(sectionEnd) : 0.0d,
+                    this.getMaximumPatternLength(sectionEnd, interruptTracks)
+            ).offsetNotes(currentPosition);
+            result.addAll(list);
+            
+            if ( (this.currentPositionInPattern + remainingTicks) >= this.currentExecution.getLength()) {
+                this.currentPosition = this.getEnd();
+                remainingTicks -= (this.currentExecution.getLength() - this.currentPositionInPattern);
+                this.processMessage();
+                this.getNextPatternExecution(random);
+                this.currentPositionInPattern = 0;
+            } else {
+                this.currentPositionInPattern += remainingTicks;
+                remainingTicks = 0;
+            }
+        }
+        
+        this.currentRealTimePosition += ticks;
         return result;
     }
     
     private void processMessage() {
-        if (this.rootGroup.getMessage().getInterrupt()) {
+        if (this.message.getInterrupt()) {
             if (this.positionInterrupt == null) {
                 this.positionInterrupt = this.currentPosition;
             }
-        } else if (this.rootGroup.getMessage().getFinished()) {
+        } else if (this.message.getFinished()) {
             if (this.positionFinished == null) {
                 this.positionFinished = this.currentPosition;
             }

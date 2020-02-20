@@ -38,24 +38,66 @@ public class PatternTest extends ImprovisoTest {
     
     @Test
     public void testExecutePattern() {
+        MIDINote MIDInote1 = new MIDINote(1, 2, 3, 4, 5);
+        MIDINote MIDInote2 = new MIDINote(2, 3, 4, 5, 6);
+        
         Note note1 = mock(Note.class);
-        when(note1.execute(any(Random.class), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList());
+        when(note1.execute(any(Random.class), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList(MIDInote1));
         Note note2 = mock(Note.class);
-        when(note2.execute(any(Random.class), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList());
+        when(note2.execute(any(Random.class), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList(MIDInote2));
+        Note note3 = mock(Note.class);
+        when(note3.execute(any(Random.class), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList());
         
         Pattern pattern = new Pattern.PatternBuilder()
                 .setId("pattern1")
                 .setDuration(getIntegerRangeMock(100))
                 .addNote(note1)
                 .addNote(note2)
+                .addNote(note3)
                 .build();
         
         assertNotNull(pattern);
         PatternExecution execution = pattern.getNextExecution(getRandomMock());
         assertEquals(100, execution.getLength());
         
-        execution.execute(getRandomMock(), 0, 99);
+        MIDINoteList result = execution.execute(getRandomMock(), 0, 99);
+        assertEquals(2, result.size());
+        assertEquals(MIDInote1, result.get(0));
+        assertEquals(MIDInote2, result.get(1));
         verify(note1).execute(getRandomMock(), 100, 0, 99);
         verify(note2).execute(getRandomMock(), 100, 0, 99);
+        verify(note3).execute(getRandomMock(), 100, 0, 99);
+    }
+    
+    @Test
+    public void testExecutePatternBeginningEnd() {
+        MIDINote MIDInote1 = new MIDINote(1, 2, 3, 4, 5);
+        MIDINote MIDInote2 = new MIDINote(2, 3, 4, 5, 6);
+        
+        Note note1 = mock(Note.class);
+        when(note1.executeRange(any(Random.class), anyInt(), anyInt(), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList(MIDInote1));
+        Note note2 = mock(Note.class);
+        when(note2.executeRange(any(Random.class), anyInt(), anyInt(), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList(MIDInote2));
+        Note note3 = mock(Note.class);
+        when(note3.executeRange(any(Random.class), anyInt(), anyInt(), anyInt(), anyDouble(), anyInt())).thenReturn(new MIDINoteList());
+        
+        Pattern pattern = new Pattern.PatternBuilder()
+                .setId("pattern1")
+                .setDuration(getIntegerRangeMock(200))
+                .addNote(note1)
+                .addNote(note2)
+                .addNote(note3)
+                .build();
+        assertNotNull(pattern);
+        PatternExecution execution = pattern.getNextExecution(getRandomMock());
+        assertEquals(200, execution.getLength());
+        
+        MIDINoteList result = execution.executeRange(getRandomMock(), 50, 150, 0, 199);
+        assertEquals(2, result.size());
+        assertEquals(MIDInote1, result.get(0));
+        assertEquals(MIDInote2, result.get(1));
+        verify(note1).executeRange(getRandomMock(), 50, 150, 200, 0, 199);
+        verify(note2).executeRange(getRandomMock(), 50, 150, 200, 0, 199);
+        verify(note3).executeRange(getRandomMock(), 50, 150, 200, 0, 199);
     }
 }

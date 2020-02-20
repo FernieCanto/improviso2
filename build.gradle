@@ -2,6 +2,10 @@ plugins {
     id 'application'
 }
 
+test {
+    testLogging.showStandardStreams = true
+}
+
 application {
     mainClassName = 'improviso.gui.Main'
 }
