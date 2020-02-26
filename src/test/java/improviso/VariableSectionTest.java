@@ -231,6 +231,7 @@ public class VariableSectionTest extends ImprovisoTest {
         sectionBuilder.setInterruptTracks(true);
         VariableSection section = sectionBuilder.build();
         section.initialize(rand);
+        assertEquals(0, section.getCurrentRealTimePosition());
         
         MIDINoteList list1 = section.executeTicks(rand, 250);
         assertEquals(4, list1.size());
@@ -239,6 +240,7 @@ public class VariableSectionTest extends ImprovisoTest {
         assertEquals(  0, list1.get(2).getStart());
         assertEquals(100, list1.get(3).getStart());
         assertFalse(section.isFinished());
+        assertEquals(250, section.getCurrentRealTimePosition());
         
         MIDINoteList list2 = section.executeTicks(rand, 250);
         assertEquals(3, list2.size());

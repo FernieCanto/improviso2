@@ -18,7 +18,7 @@ public class MIDINoteList extends ArrayList<MIDINote> {
         this.addAll(Arrays.asList(arrayNotes));
     }
     
-    public MIDINoteList offsetNotes(int offset) {
+    public MIDINoteList offsetNotes(long offset) {
         MIDINoteList newList = new MIDINoteList();
         this.forEach((note) -> {
             newList.add(new MIDINote(note, offset));

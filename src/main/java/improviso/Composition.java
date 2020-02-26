@@ -55,6 +55,11 @@ public class Composition implements java.io.Serializable {
     
     final private Long randomSeed;
     
+    private Random random;
+    private String currentSectionId;
+    private long currentSectionInitialPosition;
+    private long currentRealTimePosition;
+    
     public Composition(Integer offset) {
         this.offset = offset;
         this.randomSeed = null;
@@ -129,6 +134,25 @@ public class Composition implements java.io.Serializable {
     public Section getSection(String selectedValue) {
         return this.sections.get(selectedValue);
     }
+    
+    public void initialize(MIDIGenerator generator) throws InvalidMidiDataException, ImprovisoException {
+        currentRealTimePosition = 0;
+        generator.setMIDITracks(this.MIDITracks);
+        this.random = this.getRandom();
+        
+        this.initialSections.initialize();
+        this.sectionDestinations.forEach((sectionId, arrowList) -> {
+            arrowList.initialize();
+        });
+
+        if(initialSections.getNumArrows() > 0) {
+            currentSectionId = initialSections.getNextDestination(this.random);
+        } else if (!sections.isEmpty()) {
+            currentSectionId = sections.keySet().iterator().next();
+        } else {
+            throw new ImprovisoException("Composition has no starting sections");
+        }
+    }
 
     /**
      * Produces a MIDI file from the composition.
@@ -143,24 +167,9 @@ public class Composition implements java.io.Serializable {
                    InvalidMidiDataException,
                    IOException,
                    MidiUnavailableException {
-        String currentSectionId;
         Section currentSection;
         int currentPosition = offset;
-        generator.setMIDITracks(this.MIDITracks);
-        Random random = this.getRandom();
-        
-        this.initialSections.initialize();
-        this.sectionDestinations.forEach((sectionId, arrowList) -> {
-            arrowList.initialize();
-        });
-
-        if(initialSections.getNumArrows() > 0) {
-            currentSectionId = initialSections.getNextDestination(random);
-        } else if (!sections.isEmpty()) {
-            currentSectionId = sections.keySet().iterator().next();
-        } else {
-            throw new ImprovisoException("Composition has no starting sections");
-        }
+        this.initialize(generator);
 
         do {
             currentSection = sections.get(currentSectionId);
@@ -179,26 +188,30 @@ public class Composition implements java.io.Serializable {
                 currentSectionId = null;
             }
         } while(currentSectionId != null);
+        currentSectionInitialPosition = 0;
     }
     
     public ArrayList<MidiEvent> executeTicks(MIDIGenerator generator, int ticks) throws ImprovisoException, InvalidMidiDataException {
-        String currentSectionId;
-        this.initialSections.initialize();
-        this.sectionDestinations.forEach((sectionId, arrowList) -> {
-            arrowList.initialize();
-        });
-        Random random = this.getRandom();
+        int remainingTicks = ticks;
         
-        if(initialSections.getNumArrows() > 0) {
-            currentSectionId = initialSections.getNextDestination(random);
-        } else if (!sections.isEmpty()) {
-            currentSectionId = sections.keySet().iterator().next();
-        } else {
-            throw new ImprovisoException("Composition has no starting sections");
+        MIDINoteList list = new MIDINoteList();
+        
+        while (remainingTicks > 0 && currentSectionId != null) {
+            Section currentSection = sections.get(currentSectionId);
+            long initialSectionPosition = currentSection.getCurrentRealTimePosition();
+            
+            list.addAll(currentSection.executeTicks(random, remainingTicks).offsetNotes(currentSectionInitialPosition));
+            remainingTicks -= (currentSection.getCurrentRealTimePosition() - initialSectionPosition);
+            
+            if (currentSection.isFinished()) {
+                currentSectionInitialPosition += currentSection.getCurrentRealTimePosition();
+                if(sectionDestinations.get(currentSectionId).getNumArrows() > 0) {
+                    currentSectionId = sectionDestinations.get(currentSectionId).getNextDestination(random);
+                } else {
+                    currentSectionId = null;
+                }
+            }
         }
-        
-        Section currentSection = sections.get(currentSectionId);
-        MIDINoteList list = currentSection.executeTicks(random, ticks);
         
         ArrayList<MidiEvent> events = new ArrayList<>();
         list.forEach((MIDINote note) -> {
@@ -216,6 +229,11 @@ public class Composition implements java.io.Serializable {
         });
         
         return events;
+    }
+    
+    public boolean getIsFinished()
+    {
+        return currentSectionId == null;
     }
     
     /**

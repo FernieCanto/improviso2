@@ -208,65 +208,85 @@ public class CompositionTest {
     public void testCompositionTwoSectionsRealTime() throws ImprovisoException, InvalidMidiDataException, IOException, MidiUnavailableException {
         MIDINote[] notes1 = {
             new MIDINote(20,   0, 100, 100, 1),
-            new MIDINote(25, 100, 100, 100, 1),
+            new MIDINote(25, 100,  50, 100, 1),
         };
         MIDINote[] notes2 = {
             new MIDINote(30, 250, 100, 100, 1),
-            new MIDINote(35, 300, 100, 100, 1),
         };
         MIDINote[] notes3 = {
-            new MIDINote(40, 500, 100, 100, 1),
+            new MIDINote(35,   0,  30,  90, 1),
+        };
+        MIDINote[] notes4 = {
+            new MIDINote(40, 190,  20,  95, 1),
         };
         
         FixedSection section1 = mock(FixedSection.class);
         when(section1.getTempo()).thenReturn(120);
         when(section1.executeTicks(any(Random.class), eq(250))).thenReturn(
                 new MIDINoteList(notes1),
-                new MIDINoteList(notes2),
+                new MIDINoteList(notes2)
+        );
+        when(section1.isFinished()).thenReturn(false, true);
+        when(section1.getCurrentRealTimePosition()).thenReturn(0, 250, 250, 320);
+        
+        FixedSection section2 = mock(FixedSection.class);
+        when(section2.getTempo()).thenReturn(120);
+        when(section2.executeTicks(any(Random.class), eq(180))).thenReturn(
                 new MIDINoteList(notes3)
         );
-        when(section1.isFinished()).thenReturn(false, false, true);
-        when(section1.getCurrentRealTimePosition()).thenReturn(250, 500, 570);
+        when(section2.executeTicks(any(Random.class), eq(250))).thenReturn(
+                new MIDINoteList(notes4)
+        );
+        when(section2.isFinished()).thenReturn(false, true);
+        when(section2.getCurrentRealTimePosition()).thenReturn(0, 180, 180, 290);
         
         Composition composition = new Composition(100);
         composition.addMIDITrack(new MIDITrack(1, 0, 100, 64));
         composition.addSection("section1", section1);
+        composition.addSection("section2", section2);
         composition.addArrow(null, new Arrow.ArrowBuilder()
                 .setDestinationSection("section1")
                 .setMaxExecutions(1)
                 .build()
         );
+        composition.addArrow("section1", new Arrow.ArrowBuilder()
+                .setDestinationSection("section2")
+                .setMaxExecutions(1)
+                .build()
+        );
         
         MIDIGenerator generator = mock(MIDIGenerator.class);
+        composition.initialize(generator);
         List<MidiEvent> events = composition.executeTicks(generator, 250);
         assertEquals(4, events.size());
         
-        assertEquals(  0, events.get(0).getTick());
-        ShortMessage message1 = (ShortMessage)events.get(0).getMessage();
-        assertEquals(ShortMessage.NOTE_ON, message1.getCommand());
-        assertEquals(1, message1.getChannel());
-        assertEquals(20, message1.getData1());
-        assertEquals(100, message1.getData2());
+        assertNote(events.get(0),   0, ShortMessage.NOTE_ON, 1, 20, 100);
+        assertNote(events.get(1), 100, ShortMessage.NOTE_OFF, 1, 20, 100);
+        assertNote(events.get(2), 100, ShortMessage.NOTE_ON, 1, 25, 100);
+        assertNote(events.get(3), 150, ShortMessage.NOTE_OFF, 1, 25, 100);
+        assertFalse(composition.getIsFinished());
         
-        assertEquals(100, events.get(1).getTick());
-        ShortMessage message2 = (ShortMessage)events.get(1).getMessage();
-        assertEquals(ShortMessage.NOTE_OFF, message2.getCommand());
-        assertEquals(1, message2.getChannel());
-        assertEquals(20, message2.getData1());
-        assertEquals(100, message2.getData2());
+        List<MidiEvent> events2 = composition.executeTicks(generator, 250);
+        assertEquals(4, events2.size());
+        assertNote(events2.get(0), 250, ShortMessage.NOTE_ON, 1, 30, 100);
+        assertNote(events2.get(1), 350, ShortMessage.NOTE_OFF, 1, 30, 100);
+        assertNote(events2.get(2), 320, ShortMessage.NOTE_ON, 1, 35, 90);
+        assertNote(events2.get(3), 350, ShortMessage.NOTE_OFF, 1, 35, 90);
+        assertFalse(composition.getIsFinished());
         
-        assertEquals(100, events.get(2).getTick());
-        ShortMessage message3 = (ShortMessage)events.get(2).getMessage();
-        assertEquals(ShortMessage.NOTE_ON, message3.getCommand());
-        assertEquals(1, message3.getChannel());
-        assertEquals(25, message3.getData1());
-        assertEquals(100, message3.getData2());
-        
-        assertEquals(200, events.get(3).getTick());
-        ShortMessage message4 = (ShortMessage)events.get(3).getMessage();
-        assertEquals(ShortMessage.NOTE_OFF, message4.getCommand());
-        assertEquals(1, message4.getChannel());
-        assertEquals(25, message4.getData1());
-        assertEquals(100, message4.getData2());
+        List<MidiEvent> events3 = composition.executeTicks(generator, 250);
+        assertEquals(2, events3.size());
+        assertNote(events3.get(0), 510, ShortMessage.NOTE_ON, 1, 40, 95);
+        assertNote(events3.get(1), 530, ShortMessage.NOTE_OFF, 1, 40, 95);
+        assertTrue(composition.getIsFinished());
+    }
+    
+    private void assertNote(MidiEvent event, long position, int command, int channel, int pitch, int velocity) {
+        assertEquals(position, event.getTick());
+        ShortMessage message = (ShortMessage)event.getMessage();
+        assertEquals(command, message.getCommand());
+        assertEquals(channel, message.getChannel());
+        assertEquals(pitch, message.getData1());
+        assertEquals(velocity, message.getData2());
     }
 }

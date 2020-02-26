@@ -185,8 +185,8 @@ public class FixedSectionTest extends ImprovisoTest {
         assertEquals(2, list3.size());
         ArgumentCaptor<Section.SectionEnd> sectionEndTrack3_1 = ArgumentCaptor.forClass(Section.SectionEnd.class);
         ArgumentCaptor<Section.SectionEnd> sectionEndTrack3_2 = ArgumentCaptor.forClass(Section.SectionEnd.class);
-        verify(track1).executeTicks(eq(rand), sectionEndTrack3_1.capture(), eq(130), eq(false), eq(true));
-        verify(track2).executeTicks(eq(rand), sectionEndTrack3_2.capture(), eq(130), eq(false), eq(true));
+        verify(track1, times(3)).executeTicks(eq(rand), sectionEndTrack3_1.capture(), eq(250), eq(false), eq(true));
+        verify(track2, times(3)).executeTicks(eq(rand), sectionEndTrack3_2.capture(), eq(250), eq(false), eq(true));
         assertEquals(630, sectionEndTrack3_1.getValue().intValue());
         assertEquals(630, sectionEndTrack3_2.getValue().intValue());
     }

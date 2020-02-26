@@ -261,18 +261,11 @@ public abstract class Section implements java.io.Serializable {
         MIDINoteList notes = new MIDINoteList();
         SectionEnd newEnd = this.currentSectionEnd;
         
-        final int actualTicks;
-        if (currentRealTimePosition + ticks > this.currentSectionEnd.intValue()) {
-            actualTicks = this.currentSectionEnd.intValue() - currentRealTimePosition;
-        } else {
-            actualTicks = ticks;
-        }
-        
         for (Track track : this.tracks) {
             notes.addAll(track.executeTicks(
                 random,
                 this.currentSectionEnd,
-                actualTicks,
+                ticks,
                 this.interruptTracks,
                 this.calculatePatternPosition()
             ));
@@ -280,10 +273,15 @@ public abstract class Section implements java.io.Serializable {
             if (currentTrackEnd.compareTo(newEnd) == -1) {
                 newEnd = currentTrackEnd;
             }
-        };
+        }
         MIDINoteList newNotes = notes.trimNotesAfterEnd(newEnd);
-        currentRealTimePosition += actualTicks;
         this.currentSectionEnd = newEnd;
+        
+        if (currentRealTimePosition + ticks > this.currentSectionEnd.intValue()) {
+            currentRealTimePosition = this.currentSectionEnd.intValue();
+        } else {
+            currentRealTimePosition += ticks;
+        }
         
         return newNotes;
     }
@@ -293,7 +291,8 @@ public abstract class Section implements java.io.Serializable {
     }
     
     public int getCurrentRealTimePosition() {
-        return this.currentSectionEnd.intValue();
+    //    return this.currentSectionEnd.intValue();
+        return currentRealTimePosition;
     }
     
     private boolean sectionNotFinished(SectionEnd end) {

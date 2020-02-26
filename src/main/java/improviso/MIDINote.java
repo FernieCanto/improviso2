@@ -8,9 +8,8 @@ import java.io.Serializable;
  * specific starting position, length, pitch and velocity.
  * @author Fernie Canto
  */
-public class MIDINote implements Serializable {
+public class MIDINote extends MIDIEvent implements Serializable {
     final private int pitch;
-    final private int start;
     final private int length;
     final private int velocity;
     final private int MIDITrack;
@@ -25,9 +24,9 @@ public class MIDINote implements Serializable {
      * @param velocity The velocity of the note.
      * @param track The number of the MIDI track where this note will be placed.
      */
-    public MIDINote(int pitch, int start, int length, int velocity, int track) {
+    public MIDINote(int pitch, long start, int length, int velocity, int track) {
+        super(start);
         this.pitch = pitch;
-        this.start = start;
         this.length = length;
         this.velocity = velocity;
         this.MIDITrack = track;
@@ -40,9 +39,9 @@ public class MIDINote implements Serializable {
      * @param offset The number of ticks by which the note's starting position
      * will be offset
      */
-    public MIDINote(MIDINote anotherNote, int offset) {
+    public MIDINote(MIDINote anotherNote, long offset) {
+        super(anotherNote.getStart() + offset);
         this.pitch = anotherNote.getPitch();
-        this.start = anotherNote.getStart() + offset;
         this.length = anotherNote.getLength();
         this.velocity = anotherNote.getVelocity();
         this.MIDITrack = anotherNote.getMIDITrack();
@@ -64,14 +63,6 @@ public class MIDINote implements Serializable {
      */
     public int getPitch() {
         return pitch;
-    }
-
-    /**
-     * Gets the starting position of the note in ticks.
-     * @return The starting position
-     */
-    public int getStart() {
-        return start;
     }
 
     /**
