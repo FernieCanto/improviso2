@@ -7,6 +7,8 @@ package improviso.gui;
 
 import improviso.ImprovisoException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.JOptionPane;
@@ -337,7 +339,7 @@ public class SectionPanel extends javax.swing.JPanel {
         if (listSections.getSelectedValue() != null) {
             try {
                 controller.playSectionRealTime(listSections.getSelectedValue());
-            } catch (InvalidMidiDataException | ImprovisoException | IOException | MidiUnavailableException ex) {
+            } catch (InterruptedException | InvalidMidiDataException | ImprovisoException | IOException | MidiUnavailableException ex) {
                 JOptionPane.showMessageDialog(null, "Error playing section: " + ex.getMessage());
             }
         }

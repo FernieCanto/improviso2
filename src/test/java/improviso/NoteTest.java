@@ -56,11 +56,12 @@ public class NoteTest extends ImprovisoTest {
         
         MIDINoteList result = noteDef.execute(getRandomMock(), 55, 0.5, 55);
         assertFalse(result.isEmpty());
-        assertEquals(30, result.get(0).getPitch());
-        assertEquals(10, result.get(0).getVelocity());
-        assertEquals(20, result.get(0).getStart());
-        assertEquals(35, result.get(0).getLength());
-        assertEquals(2, result.get(0).getMIDITrack());
+        MIDINote note0 = (MIDINote)result.get(0);
+        assertEquals(30, note0.getPitch());
+        assertEquals(10, note0.getVelocity());
+        assertEquals(20, note0.getStart());
+        assertEquals(35, note0.getLength());
+        assertEquals( 2, note0.getMIDITrack());
     }
     
     /**
@@ -77,10 +78,11 @@ public class NoteTest extends ImprovisoTest {
         
         MIDINoteList result = noteDef.execute(getRandomMock(), 200, 0.5, Integer.MAX_VALUE);
         assertFalse(result.isEmpty());
-        assertEquals(30, result.get(0).getPitch());
-        assertEquals(10, result.get(0).getVelocity());
-        assertEquals(80, result.get(0).getStart());
-        assertEquals(50, result.get(0).getLength());
+        MIDINote note0 = (MIDINote)result.get(0);
+        assertEquals(30, note0.getPitch());
+        assertEquals(10, note0.getVelocity());
+        assertEquals(80, note0.getStart());
+        assertEquals(50, note0.getLength());
     }
     
     @Test
@@ -91,7 +93,8 @@ public class NoteTest extends ImprovisoTest {
                 .build();
         MIDINoteList result = noteDef.execute(getRandomMock(), 200, 0.5, Integer.MAX_VALUE);
         assertFalse(result.isEmpty());
-        assertEquals(32, result.get(0).getPitch());
+        MIDINote note0 = (MIDINote)result.get(0);
+        assertEquals(32, note0.getPitch());
     }
     
     @Test
@@ -114,9 +117,10 @@ public class NoteTest extends ImprovisoTest {
                 .build();
         MIDINoteList result = noteDef.executeRange(getRandomMock(), 0, 50, 100, 1.0, 100);
         assertFalse(result.isEmpty());
-        assertEquals(30, result.get(0).getPitch());
-        assertEquals(50, result.get(0).getStart());
-        assertEquals(50, result.get(0).getLength());
+        MIDINote note0 = (MIDINote)result.get(0);
+        assertEquals(30, note0.getPitch());
+        assertEquals(50, note0.getStart());
+        assertEquals(50, note0.getLength());
     }
     
     @Test
@@ -150,9 +154,10 @@ public class NoteTest extends ImprovisoTest {
                 .build();
         MIDINoteList result = noteDef.executeRange(getRandomMock(), 0, 50, 100, 1.0, 100);
         assertFalse(result.isEmpty());
-        assertEquals(30, result.get(0).getPitch());
-        assertEquals(50, result.get(0).getStart());
-        assertEquals(50, result.get(0).getLength());
+        MIDINote note0 = (MIDINote)result.get(0);
+        assertEquals(30, note0.getPitch());
+        assertEquals(50, note0.getStart());
+        assertEquals(50, note0.getLength());
     }
     
     @Test

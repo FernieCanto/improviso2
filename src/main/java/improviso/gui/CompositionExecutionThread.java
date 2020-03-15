@@ -18,20 +18,35 @@ import javax.sound.midi.MidiUnavailableException;
  */
 public class CompositionExecutionThread extends Thread {
     private final Composition composition;
-    private final MIDIGenerator generator;
+    private final MIDIRealTimePlayer generator;
+    private boolean interrupt = false;
     
-    public CompositionExecutionThread(Composition composition, MIDIGenerator generator) {
+    public CompositionExecutionThread(Composition composition, MIDIRealTimePlayer generator) {
         this.composition = composition;
         this.generator = generator;
     }
+    
+    public void initialize() {
+        this.interrupt = false;
+    }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         try {
-            this.composition.execute(this.generator);
-        } catch (ImprovisoException | InvalidMidiDataException | IOException | MidiUnavailableException ex) {
+            System.out.println("INITIALIZING");
+            this.generator.initialize(this.composition);
+            while (!this.interrupt && this.generator.play(this.composition)) {
+                this.wait(0, 500000);
+            }
+            System.out.println("Stopped.");
+            this.wait(1000);
+            this.generator.closeDevice();
+        } catch (ImprovisoException | InvalidMidiDataException | MidiUnavailableException | InterruptedException ex) {
             Logger.getLogger(CompositionExecutionThread.class.getName()).log(Level.SEVERE, null, ex);
         }
-        generator.playSequenceRealTime();
+    }
+    
+    public void stopPlaying() {
+        this.interrupt = true;
     }
 }

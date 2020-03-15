@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<composition padding="4:000">
+<composition padding="1:000">
     <MIDITrack channel="1" instrument="0" volume="100" pan="0" />
     <MIDITrack channel="10" instrument="0" volume="100" pan="0" />
     

@@ -22,7 +22,7 @@ import javax.swing.JOptionPane;
  */
 public class MIDIDevicePanel extends javax.swing.JPanel {
     private final CompositionController controller;
-    Thread executionThread;
+    CompositionExecutionThread executionThread;
     MIDIDeviceListModel model = new MIDIDeviceListModel();
 
     /**
@@ -51,6 +51,7 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
         deviceList = new javax.swing.JList<>();
         btnSaveMIDI = new javax.swing.JButton();
         btnPlayComposition = new javax.swing.JButton();
+        btnStopComposition = new javax.swing.JButton();
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("MIDI Devices"));
 
@@ -87,6 +88,13 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
             }
         });
 
+        btnStopComposition.setText("Stop composition");
+        btnStopComposition.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStopCompositionActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -105,8 +113,10 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(btnSaveMIDI)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnPlayComposition)))
-                        .addGap(0, 393, Short.MAX_VALUE)))
+                                .addComponent(btnPlayComposition)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnStopComposition)))
+                        .addGap(0, 274, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -123,7 +133,8 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSaveMIDI)
-                    .addComponent(btnPlayComposition))
+                    .addComponent(btnPlayComposition)
+                    .addComponent(btnStopComposition))
                 .addContainerGap())
         );
 
@@ -190,10 +201,17 @@ public class MIDIDevicePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnPlayCompositionActionPerformed
 
+    private void btnStopCompositionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStopCompositionActionPerformed
+        if (this.executionThread != null) {
+            this.executionThread.stopPlaying();
+        }
+    }//GEN-LAST:event_btnStopCompositionActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnPlayComposition;
     private javax.swing.JButton btnSaveMIDI;
+    private javax.swing.JButton btnStopComposition;
     private javax.swing.JList<String> deviceList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;

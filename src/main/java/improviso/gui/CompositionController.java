@@ -68,13 +68,14 @@ public class CompositionController {
     }
     
     CompositionExecutionThread playCompositionRealTime() throws InvalidMidiDataException, ImprovisoException, IOException, MidiUnavailableException {
-        MIDIGenerator generator = new MIDIGenerator(midiDevice);
+        MIDIRealTimePlayer generator = new MIDIRealTimePlayer(midiDevice);
         CompositionExecutionThread exThread = new CompositionExecutionThread(composition, generator);
+        exThread.initialize();
         exThread.start();
         return exThread;
     }
 
-    void playSectionRealTime(String sectionId) throws InvalidMidiDataException, ImprovisoException, IOException, MidiUnavailableException {
+    void playSectionRealTime(String sectionId) throws InvalidMidiDataException, ImprovisoException, IOException, MidiUnavailableException, InterruptedException {
         MIDIGenerator generator = new MIDIGenerator(midiDevice);
         composition.executeSection(generator, sectionId);
         generator.playSequenceRealTime();

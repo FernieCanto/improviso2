@@ -5,9 +5,7 @@
 package improviso;
 
 import java.io.IOException;
-import static java.lang.Math.round;
 import java.time.Instant;
-import static java.time.temporal.ChronoUnit.MICROS;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.midi.*;
@@ -16,26 +14,20 @@ import javax.sound.midi.*;
  *
  * @author fernando
  */
-public class MIDIGenerator {
+public class MIDIGenerator implements MIDIGeneratorInterface {
+    final private Sequence sequence;
+    final private MidiDevice midiDevice;
     private MIDITrackList MIDITracks;
-    private Sequence sequence;
     private javax.sound.midi.Track[] tracks;
-    private MidiDevice midiDevice;
     
-    private long currentTick;
+    private boolean interrupt = false;
     
     public MIDIGenerator(MidiDevice midiDevice) throws InvalidMidiDataException {
         this.midiDevice = midiDevice;
         sequence = new Sequence(Sequence.PPQ, 120);
-        currentTick = 0;
-    }
-  
-    public MIDIGenerator(MIDITrackList MIDITracks) throws InvalidMidiDataException {
-        sequence = new Sequence(Sequence.PPQ, 120);
-        currentTick = 0;
-        this.setMIDITracks(MIDITracks);
     }
     
+    @Override
     public void setMIDITracks(MIDITrackList MIDITracks) throws InvalidMidiDataException {
         this.MIDITracks = MIDITracks;
         tracks = new javax.sound.midi.Track[MIDITracks.size()];
@@ -48,12 +40,9 @@ public class MIDIGenerator {
             trackIndex++;
         }
     }
-  
-    public void setCurrentTick(long tick) {
-        currentTick = tick;
-    }
 
-    public void setTempo(int tempo) throws InvalidMidiDataException {
+    @Override
+    public void setTempo(int tempo, long tick) throws InvalidMidiDataException {
         MetaMessage tempoMessage = new MetaMessage();
         int microseconds = (int)(60000000 / tempo);
         byte data[] = new byte[3];
@@ -61,10 +50,11 @@ public class MIDIGenerator {
         data[1] = (byte)(microseconds >>> 8);
         data[2] = (byte)(microseconds);
         tempoMessage.setMessage(0x51, data, 3);
-        tracks[0].add(new MidiEvent(tempoMessage, currentTick));
+        tracks[0].add(new MidiEvent(tempoMessage, tick));
     }
 
-    public void setTimeSignature(int numerator, int denominator) throws InvalidMidiDataException {
+    @Override
+    public void setTimeSignature(int numerator, int denominator, long tick) throws InvalidMidiDataException {
         MetaMessage signatureMessage = new MetaMessage();
         int denominatorExp = (int) (Math.log((double)denominator) / Math.log(2.0));
         byte data[] = new byte[4];
@@ -73,11 +63,12 @@ public class MIDIGenerator {
         data[2] = (byte)24;
         data[3] = (byte)8;
         signatureMessage.setMessage(0x58, data, 4);
-        tracks[0].add(new MidiEvent(signatureMessage, currentTick));
+        tracks[0].add(new MidiEvent(signatureMessage, tick));
     }
 
     public void addNotes(MIDINoteList notes) throws InvalidMidiDataException {
-        for(MIDINote note : notes) {
+        for(MIDIEvent midiEvent : notes) {
+            MIDINote note = (MIDINote)midiEvent;
             int indexTrack = note.getMIDITrack() - 1;
             MidiEvent event;
             
@@ -108,13 +99,11 @@ public class MIDIGenerator {
 
             System.out.println(sequencer.getMicrosecondLength());
             
-            System.out.println("INICIO");
             try {
                 Thread.sleep((sequencer.getMicrosecondLength() / 1000) + 1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(MIDIGenerator.class.getName()).log(Level.SEVERE, null, ex);
             }
-            System.out.println("FIM");
 
             sequencer.stop();
             this.midiDevice.close();
@@ -125,12 +114,12 @@ public class MIDIGenerator {
         }
     }
     
-    public void playSequenceRealTime() {
-        int tempo = 120;
-        double qLength = (60.0d / (double)tempo);
+    public synchronized void playSequenceRealTime() throws InterruptedException {
+        double qLength = (60.0d / 120.0d);
         double tickLength = (qLength / 120.0d);
-        System.out.println(qLength);
-        System.out.println(tickLength);
+        long currentPlayTick = 0;
+        
+        interrupt = false;
         
         try {
             int[] nextEvent = new int[this.sequence.getTracks().length];
@@ -141,33 +130,55 @@ public class MIDIGenerator {
             this.midiDevice.open();
             Receiver receiver = this.midiDevice.getReceiver();
             
-            Instant startingInstant = Instant.now();
-            long initialDevicePosition = this.midiDevice.getMicrosecondPosition();
-            
             boolean finished;
             do {
+                System.out.println("Beginning of loop: " + Instant.now().getNano());
                 finished = true;
                 int trackIdx = 0;
                 for (javax.sound.midi.Track t : this.sequence.getTracks()) {
-                    if (nextEvent[trackIdx] < t.size()) {
-                        MidiEvent evento = t.get(nextEvent[trackIdx]);
-                        long eventTimeInMicroseconds = round(tickLength * (double)evento.getTick() * 1000000.0d);
-                        
-                        long currentPosition = startingInstant.until(Instant.now(), MICROS);
-                        
-                        if((this.midiDevice.getMicrosecondPosition() - initialDevicePosition) >= eventTimeInMicroseconds) {
-                            receiver.send(evento.getMessage(), 0);
-                            nextEvent[trackIdx]++;
+                    while (nextEvent[trackIdx] < t.size() && t.get(nextEvent[trackIdx]).getTick() == currentPlayTick) {
+                        MidiEvent event = t.get(nextEvent[trackIdx]);
+                        if (event.getMessage() instanceof MetaMessage && event.getMessage().getMessage()[1] == 0x51) {
+                            tickLength = this.updateTempo((MetaMessage)event.getMessage());
+                        } else {
+                            receiver.send(event.getMessage(), 0);
                         }
+                        nextEvent[trackIdx]++;
+                    }
+                    if(nextEvent[trackIdx] < t.size()) {
                         finished = false;
                     }
 
                     trackIdx++;
                 }
-            } while (!finished);
+                currentPlayTick++;
+                
+                long milliseconds = (long)Math.floor(tickLength * 1000.0d);
+                double nanoseconds = ((tickLength * 1000.0d) - milliseconds) * 1000000d;
+                
+                System.out.println("End of loop: " + Instant.now().getNano());
+                System.out.println("Nanoseconds to wait: " + ((milliseconds * 1000000) + nanoseconds));
+                this.wait(milliseconds, (int)nanoseconds);
+                System.out.println("After waiting: " + Instant.now().getNano());
+            } while (!finished && !this.interrupt);
+            this.midiDevice.close();
         } catch (MidiUnavailableException ex) {
             Logger.getLogger(MIDIGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private double updateTempo(MetaMessage metaMessage) {
+        int microsecondsPerQuarterNote = 
+                (metaMessage.getMessage()[3] & 0xFF) << 16 |
+                (metaMessage.getMessage()[4] & 0xFF) << 8 |
+                (metaMessage.getMessage()[5] & 0xFF);
+        System.out.println("Tempo: " + (60000000 / microsecondsPerQuarterNote) + "bpm");
+        System.out.println(microsecondsPerQuarterNote);
+        return ((double)microsecondsPerQuarterNote / 120.0d) / 1000000.0d;
+    }
+    
+    public void setInterrupt() {
+        this.interrupt = true;
     }
 
     public void generateFile(String fileName) throws IOException {

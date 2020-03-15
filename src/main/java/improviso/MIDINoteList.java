@@ -3,7 +3,7 @@ package improviso;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MIDINoteList extends ArrayList<MIDINote> {
+public class MIDINoteList extends ArrayList<MIDIEvent> {
     public MIDINoteList() {
         super();
     }
@@ -21,7 +21,7 @@ public class MIDINoteList extends ArrayList<MIDINote> {
     public MIDINoteList offsetNotes(long offset) {
         MIDINoteList newList = new MIDINoteList();
         this.forEach((note) -> {
-            newList.add(new MIDINote(note, offset));
+            newList.add(MIDIEvent.createEventWithOffset(note, offset));
         });
         return newList;
     }

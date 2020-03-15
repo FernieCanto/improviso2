@@ -2,9 +2,7 @@ package improviso;
 import java.util.*;
 import java.io.*;
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.ShortMessage;
 
 
 /**
@@ -135,8 +133,9 @@ public class Composition implements java.io.Serializable {
         return this.sections.get(selectedValue);
     }
     
-    public void initialize(MIDIGenerator generator) throws InvalidMidiDataException, ImprovisoException {
+    public void initialize(MIDIGeneratorInterface generator) throws InvalidMidiDataException, ImprovisoException {
         currentRealTimePosition = 0;
+        currentSectionInitialPosition = 0;
         generator.setMIDITracks(this.MIDITracks);
         this.random = this.getRandom();
         
@@ -152,6 +151,9 @@ public class Composition implements java.io.Serializable {
         } else {
             throw new ImprovisoException("Composition has no starting sections");
         }
+        
+        sections.get(currentSectionId).initialize(this.random);
+        generator.setTempo(sections.get(currentSectionId).getTempo(), 0);
     }
 
     /**
@@ -162,7 +164,7 @@ public class Composition implements java.io.Serializable {
      * @throws IOException 
      * @throws javax.sound.midi.MidiUnavailableException 
      */
-    public void execute(MIDIGenerator generator)
+    public void execute(MIDIGeneratorInterface generator)
             throws ImprovisoException,
                    InvalidMidiDataException,
                    IOException,
@@ -174,9 +176,8 @@ public class Composition implements java.io.Serializable {
         do {
             currentSection = sections.get(currentSectionId);
             
-            generator.setCurrentTick(currentPosition);
-            generator.setTempo(currentSection.getTempo());
-            generator.setTimeSignature(currentSection.getTimeSignatureNumerator(), currentSection.getTimeSignatureDenominator());
+            generator.setTempo(currentSection.getTempo(), currentPosition);
+            generator.setTimeSignature(currentSection.getTimeSignatureNumerator(), currentSection.getTimeSignatureDenominator(), currentPosition);
             
             generator.addNotes(currentSection.execute(random).offsetNotes(currentPosition));
 
@@ -191,7 +192,7 @@ public class Composition implements java.io.Serializable {
         currentSectionInitialPosition = 0;
     }
     
-    public ArrayList<MidiEvent> executeTicks(MIDIGenerator generator, int ticks) throws ImprovisoException, InvalidMidiDataException {
+    public void executeTicks(MIDIGeneratorInterface generator, int ticks) throws ImprovisoException, InvalidMidiDataException {
         int remainingTicks = ticks;
         
         MIDINoteList list = new MIDINoteList();
@@ -207,28 +208,15 @@ public class Composition implements java.io.Serializable {
                 currentSectionInitialPosition += currentSection.getCurrentRealTimePosition();
                 if(sectionDestinations.get(currentSectionId).getNumArrows() > 0) {
                     currentSectionId = sectionDestinations.get(currentSectionId).getNextDestination(random);
+                    sections.get(currentSectionId).initialize(this.random);
+                    generator.setTempo(sections.get(currentSectionId).getTempo(), currentSectionInitialPosition);
                 } else {
                     currentSectionId = null;
                 }
             }
         }
         
-        ArrayList<MidiEvent> events = new ArrayList<>();
-        list.forEach((MIDINote note) -> {
-            try {
-                ShortMessage noteOnMessage = new ShortMessage();
-                noteOnMessage.setMessage(ShortMessage.NOTE_ON, MIDITracks.get(note.getMIDITrack() - 1).getChannel(), note.getPitch(), note.getVelocity());
-                events.add(new MidiEvent(noteOnMessage, note.getStart()));
-
-                ShortMessage noteOffMessage = new ShortMessage();
-                noteOffMessage.setMessage(ShortMessage.NOTE_OFF, MIDITracks.get(note.getMIDITrack() - 1).getChannel(), note.getPitch(), note.getVelocity());
-                events.add(new MidiEvent(noteOffMessage, note.getStart() + note.getLength()));
-            } catch(InvalidMidiDataException e) {
-                
-            }
-        });
-        
-        return events;
+        generator.addNotes(list);
     }
     
     public boolean getIsFinished()
@@ -252,12 +240,10 @@ public class Composition implements java.io.Serializable {
                    MidiUnavailableException {
         Section currentSection = this.getSection(sectionId);
         generator.setMIDITracks(this.MIDITracks);
-        Random random = this.getRandom();
 
-        generator.setCurrentTick(0);
-        generator.setTempo(currentSection.getTempo());
-        generator.setTimeSignature(currentSection.getTimeSignatureNumerator(), currentSection.getTimeSignatureDenominator());
+        generator.setTempo(currentSection.getTempo(), 0);
+        generator.setTimeSignature(currentSection.getTimeSignatureNumerator(), currentSection.getTimeSignatureDenominator(), 0);
 
-        generator.addNotes(currentSection.execute(random).offsetNotes(0));
+        generator.addNotes(currentSection.execute(this.getRandom()).offsetNotes(0));
     }
 }

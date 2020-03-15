@@ -5,11 +5,13 @@
  */
 package improviso;
 
+import java.io.Serializable;
+
 /**
  *
  * @author LENOVO G40
  */
-public class MIDITempo extends MIDIEvent {
+public class MIDITempo extends MIDIEvent implements Serializable {
     private final int tempo;
     
     public MIDITempo(long start, int tempo) {

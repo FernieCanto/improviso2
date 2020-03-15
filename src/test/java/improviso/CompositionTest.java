@@ -8,10 +8,7 @@ package improviso;
 import java.io.IOException;
 import java.util.*;
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiEvent;
-import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.ShortMessage;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.*;
@@ -126,9 +123,8 @@ public class CompositionTest {
         assertEquals(100, argumentMIDITrackList.getValue().get(0).getVolume());
         assertEquals(64, argumentMIDITrackList.getValue().get(0).getPan());
         
-        verify(generator).setCurrentTick(100);
-        verify(generator).setTempo(111);
-        verify(generator).setTimeSignature(5, 8);
+        verify(generator).setTempo(111, 100);
+        verify(generator).setTimeSignature(5, 8, 100);
         ArgumentCaptor<MIDINoteList> argumentNotes = ArgumentCaptor.forClass(MIDINoteList.class);
         verify(generator).addNotes(argumentNotes.capture());
         
@@ -171,9 +167,8 @@ public class CompositionTest {
         ArgumentCaptor<MIDINoteList> argumentNotes2 = ArgumentCaptor.forClass(MIDINoteList.class);
         ArgumentCaptor<MIDINoteList> argumentNotes3 = ArgumentCaptor.forClass(MIDINoteList.class);
         
-        generatorInOrder.verify(generator).setCurrentTick(100);
-        generatorInOrder.verify(generator).setTempo(111);
-        generatorInOrder.verify(generator).setTimeSignature(5, 8);
+        generatorInOrder.verify(generator).setTempo(111, 100);
+        generatorInOrder.verify(generator).setTimeSignature(5, 8,100);
         generatorInOrder.verify(generator).addNotes(argumentNotes1.capture());
         
         assertEquals(100, argumentNotes1.getValue().get(0).getStart());
@@ -181,9 +176,8 @@ public class CompositionTest {
         assertEquals(300, argumentNotes1.getValue().get(2).getStart());
         assertEquals(400, argumentNotes1.getValue().get(3).getStart());
         
-        generatorInOrder.verify(generator).setCurrentTick(500);
-        generatorInOrder.verify(generator).setTempo(222);
-        generatorInOrder.verify(generator).setTimeSignature(11, 16);
+        generatorInOrder.verify(generator).setTempo(222,500);
+        generatorInOrder.verify(generator).setTimeSignature(11, 16, 500);
         generatorInOrder.verify(generator).addNotes(argumentNotes2.capture());
         
         assertEquals(500, argumentNotes2.getValue().get(0).getStart());
@@ -193,9 +187,8 @@ public class CompositionTest {
         assertEquals(900, argumentNotes2.getValue().get(4).getStart());
         assertEquals(1000, argumentNotes2.getValue().get(5).getStart());
         
-        generatorInOrder.verify(generator).setCurrentTick(1300);
-        generatorInOrder.verify(generator).setTempo(111);
-        generatorInOrder.verify(generator).setTimeSignature(5, 8);
+        generatorInOrder.verify(generator).setTempo(111, 1300);
+        generatorInOrder.verify(generator).setTimeSignature(5, 8, 1300);
         generatorInOrder.verify(generator).addNotes(argumentNotes3.capture());
         
         assertEquals(1300, argumentNotes3.getValue().get(0).getStart());
@@ -256,37 +249,43 @@ public class CompositionTest {
         );
         
         MIDIGenerator generator = mock(MIDIGenerator.class);
+        InOrder generatorInOrder = inOrder(generator);
+        
         composition.initialize(generator);
-        List<MidiEvent> events = composition.executeTicks(generator, 250);
-        assertEquals(4, events.size());
+        verify(section1).initialize(any(Random.class));
         
-        assertNote(events.get(0),   0, ShortMessage.NOTE_ON, 1, 20, 100);
-        assertNote(events.get(1), 100, ShortMessage.NOTE_OFF, 1, 20, 100);
-        assertNote(events.get(2), 100, ShortMessage.NOTE_ON, 1, 25, 100);
-        assertNote(events.get(3), 150, ShortMessage.NOTE_OFF, 1, 25, 100);
+        composition.executeTicks(generator, 250);
+        ArgumentCaptor<MIDINoteList> argumentNotes1 = ArgumentCaptor.forClass(MIDINoteList.class);
+        generatorInOrder.verify(generator).addNotes(argumentNotes1.capture());
+        
+        assertEquals(2, argumentNotes1.getValue().size());
+        assertNote((MIDINote)argumentNotes1.getValue().get(0), 20,   0, 100, 100, 1);
+        assertNote((MIDINote)argumentNotes1.getValue().get(1), 25, 100,  50, 100, 1);
         assertFalse(composition.getIsFinished());
         
-        List<MidiEvent> events2 = composition.executeTicks(generator, 250);
-        assertEquals(4, events2.size());
-        assertNote(events2.get(0), 250, ShortMessage.NOTE_ON, 1, 30, 100);
-        assertNote(events2.get(1), 350, ShortMessage.NOTE_OFF, 1, 30, 100);
-        assertNote(events2.get(2), 320, ShortMessage.NOTE_ON, 1, 35, 90);
-        assertNote(events2.get(3), 350, ShortMessage.NOTE_OFF, 1, 35, 90);
+        ArgumentCaptor<MIDINoteList> argumentNotes2 = ArgumentCaptor.forClass(MIDINoteList.class);
+        composition.executeTicks(generator, 250);
+        generatorInOrder.verify(generator).addNotes(argumentNotes2.capture());
+        
+        assertEquals(2, argumentNotes2.getValue().size());
+        assertNote((MIDINote)argumentNotes2.getValue().get(0), 30, 250, 100, 100, 1);
+        assertNote((MIDINote)argumentNotes2.getValue().get(1), 35, 320,  30,  90, 1);
         assertFalse(composition.getIsFinished());
         
-        List<MidiEvent> events3 = composition.executeTicks(generator, 250);
-        assertEquals(2, events3.size());
-        assertNote(events3.get(0), 510, ShortMessage.NOTE_ON, 1, 40, 95);
-        assertNote(events3.get(1), 530, ShortMessage.NOTE_OFF, 1, 40, 95);
+        ArgumentCaptor<MIDINoteList> argumentNotes3 = ArgumentCaptor.forClass(MIDINoteList.class);
+        composition.executeTicks(generator, 250);
+        generatorInOrder.verify(generator).addNotes(argumentNotes3.capture());
+        
+        assertEquals(1, argumentNotes3.getValue().size());
+        assertNote((MIDINote)argumentNotes3.getValue().get(0), 40, 510,  20,  95, 1);
         assertTrue(composition.getIsFinished());
     }
     
-    private void assertNote(MidiEvent event, long position, int command, int channel, int pitch, int velocity) {
-        assertEquals(position, event.getTick());
-        ShortMessage message = (ShortMessage)event.getMessage();
-        assertEquals(command, message.getCommand());
-        assertEquals(channel, message.getChannel());
-        assertEquals(pitch, message.getData1());
-        assertEquals(velocity, message.getData2());
+    private void assertNote(MIDINote note, int pitch, long start, int length, int velocity, int MIDItrack) {
+        assertEquals(pitch, note.getPitch());
+        assertEquals(start, note.getStart());
+        assertEquals(length, note.getLength());
+        assertEquals(velocity, note.getVelocity());
+        assertEquals(MIDItrack, note.getMIDITrack());
     }
 }
