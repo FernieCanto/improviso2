@@ -68,36 +68,36 @@ public class MIDIGenerator implements MIDIGeneratorInterface {
 
     public void addNotes(MIDINoteList notes) throws InvalidMidiDataException {
         for(MIDIEvent midiEvent : notes) {
-            MIDINote note = (MIDINote)midiEvent;
-            int indexTrack = note.getMIDITrack() - 1;
-            MidiEvent event;
-            
-            ShortMessage noteMessage = new ShortMessage();
-            noteMessage.setMessage(ShortMessage.NOTE_ON, MIDITracks.get(indexTrack).getChannel(), note.getPitch(), note.getVelocity());
-            event = new MidiEvent(noteMessage, note.getStart());
-            tracks[indexTrack].add(event);
+            if (midiEvent instanceof MIDINote) {
+                MIDINote note = (MIDINote)midiEvent;
+                int indexTrack = note.getMIDITrack() - 1;
+                MidiEvent event;
 
-            noteMessage = new ShortMessage();
-            noteMessage.setMessage(ShortMessage.NOTE_OFF, MIDITracks.get(indexTrack).getChannel(), note.getPitch(), note.getVelocity());
-            event = new MidiEvent(noteMessage, note.getStart() + note.getLength());
-            tracks[indexTrack].add(event);
+                ShortMessage noteMessage = new ShortMessage();
+                noteMessage.setMessage(ShortMessage.NOTE_ON, MIDITracks.get(indexTrack).getChannel(), note.getPitch(), note.getVelocity());
+                event = new MidiEvent(noteMessage, note.getStart());
+                tracks[indexTrack].add(event);
+
+                noteMessage = new ShortMessage();
+                noteMessage.setMessage(ShortMessage.NOTE_OFF, MIDITracks.get(indexTrack).getChannel(), note.getPitch(), note.getVelocity());
+                event = new MidiEvent(noteMessage, note.getStart() + note.getLength());
+                tracks[indexTrack].add(event);
+            }
         }
     }
     
     public void play() {
         try {
             Sequencer sequencer = MidiSystem.getSequencer();
-            this.midiDevice.open();
-            Receiver receiver = this.midiDevice.getReceiver();
+            //this.midiDevice.open();
+            //Receiver receiver = this.midiDevice.getReceiver();
 
-            Transmitter transmitter = sequencer.getTransmitter();
-            transmitter.setReceiver(receiver);
+            //Transmitter transmitter = sequencer.getTransmitter();
+            //transmitter.setReceiver(receiver);
             
             sequencer.open();
             sequencer.setSequence(this.sequence);
             sequencer.start();
-
-            System.out.println(sequencer.getMicrosecondLength());
             
             try {
                 Thread.sleep((sequencer.getMicrosecondLength() / 1000) + 1000);

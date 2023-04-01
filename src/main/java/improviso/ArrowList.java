@@ -57,13 +57,18 @@ public class ArrowList implements java.io.Serializable {
         this.currentArrows.forEach((arrow) -> {arrow.initialize();});
     }
     
-    public String getNextDestination(Random random) {
+    public String getNextDestination(Random random, boolean isInfinite) {
         if(currentArrows.isEmpty()) {
             return null;
         }
         
         Arrow selectedArrow = this.selectArrow(random.nextInt(maxProbabilities));
         String destination = selectedArrow.execute();
+        
+        if (selectedArrow.endComposition(isInfinite)) {
+            return null;
+        }
+        
         if(!selectedArrow.isActive()) {
             currentArrows.remove(selectedArrow);
             this.calculateProbabilities();

@@ -1,6 +1,10 @@
 package improviso;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.ShortMessage;
 
 /**
  * An instance of a note that's to be played in the composition. In contrast to
@@ -45,6 +49,21 @@ public class MIDINote extends MIDIEvent implements Serializable {
         this.length = anotherNote.getLength();
         this.velocity = anotherNote.getVelocity();
         this.MIDITrack = anotherNote.getMIDITrack();
+    }
+    
+    @Override
+    public ArrayList<MidiEvent> getEvents(MIDITrackList trackList) throws InvalidMidiDataException {
+        ArrayList<MidiEvent> events = new ArrayList<>();
+        
+        ShortMessage noteMessage = new ShortMessage();
+        noteMessage.setMessage(ShortMessage.NOTE_ON, trackList.getChannel(this.getMIDITrack()), this.getPitch(), this.getVelocity());
+        events.add(new MidiEvent(noteMessage, this.getStart()));
+
+        noteMessage = new ShortMessage();
+        noteMessage.setMessage(ShortMessage.NOTE_OFF, trackList.getChannel(this.getMIDITrack()), this.getPitch(), this.getVelocity());
+        events.add(new MidiEvent(noteMessage, this.getStart() + this.getLength()));
+                
+        return events;
     }
     
     /**

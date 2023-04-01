@@ -34,6 +34,7 @@ public class CompositionController {
     
     public void playComposition() throws InvalidMidiDataException, ImprovisoException, IOException, MidiUnavailableException {
         MIDIGenerator generator = new MIDIGenerator(midiDevice);
+        composition.initialize(false);
         composition.execute(generator);
         generator.play();
     }
@@ -68,8 +69,8 @@ public class CompositionController {
     }
     
     CompositionExecutionThread playCompositionRealTime() throws InvalidMidiDataException, ImprovisoException, IOException, MidiUnavailableException {
-        MIDIRealTimePlayer generator = new MIDIRealTimePlayer(midiDevice);
-        CompositionExecutionThread exThread = new CompositionExecutionThread(composition, generator);
+        MIDIRealTimePlayer player = new MIDIRealTimePlayer(composition, midiDevice);
+        CompositionExecutionThread exThread = new CompositionExecutionThread(player);
         exThread.initialize();
         exThread.start();
         return exThread;
@@ -103,6 +104,7 @@ public class CompositionController {
 
     void saveMIDI(String absolutePath) throws FileNotFoundException, InvalidMidiDataException, IOException, ImprovisoException, MidiUnavailableException {
         MIDIGenerator generator = new MIDIGenerator(midiDevice);
+        this.composition.initialize(false);
         this.composition.execute(generator);
         generator.generateFile(absolutePath);
     }

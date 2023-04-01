@@ -53,10 +53,11 @@ public class Composition implements java.io.Serializable {
     
     final private Long randomSeed;
     
+    private boolean infinite = false;
+    private boolean started = false;
     private Random random;
     private String currentSectionId;
     private long currentSectionInitialPosition;
-    private long currentRealTimePosition;
     
     public Composition(Integer offset) {
         this.offset = offset;
@@ -133,27 +134,16 @@ public class Composition implements java.io.Serializable {
         return this.sections.get(selectedValue);
     }
     
-    public void initialize(MIDIGeneratorInterface generator) throws InvalidMidiDataException, ImprovisoException {
-        currentRealTimePosition = 0;
-        currentSectionInitialPosition = 0;
-        generator.setMIDITracks(this.MIDITracks);
+    public void initialize(boolean infinite) {
+        this.infinite = infinite;
+        this.started = false;
+        this.currentSectionInitialPosition = 0;
         this.random = this.getRandom();
         
         this.initialSections.initialize();
         this.sectionDestinations.forEach((sectionId, arrowList) -> {
             arrowList.initialize();
         });
-
-        if(initialSections.getNumArrows() > 0) {
-            currentSectionId = initialSections.getNextDestination(this.random);
-        } else if (!sections.isEmpty()) {
-            currentSectionId = sections.keySet().iterator().next();
-        } else {
-            throw new ImprovisoException("Composition has no starting sections");
-        }
-        
-        sections.get(currentSectionId).initialize(this.random);
-        generator.setTempo(sections.get(currentSectionId).getTempo(), 0);
     }
 
     /**
@@ -171,7 +161,10 @@ public class Composition implements java.io.Serializable {
                    MidiUnavailableException {
         Section currentSection;
         int currentPosition = offset;
-        this.initialize(generator);
+        generator.setMIDITracks(this.MIDITracks);
+        
+        getInitialSection();
+        generator.setTempo(sections.get(currentSectionId).getTempo(), 0);
 
         do {
             currentSection = sections.get(currentSectionId);
@@ -183,19 +176,20 @@ public class Composition implements java.io.Serializable {
 
             currentPosition += currentSection.getActualEnd();
             
-            if(sectionDestinations.get(currentSectionId).getNumArrows() > 0) {
-                currentSectionId = sectionDestinations.get(currentSectionId).getNextDestination(random);
-            } else {
-                currentSectionId = null;
-            }
+            currentSectionId = sectionDestinations.get(currentSectionId).getNextDestination(random, infinite);
         } while(currentSectionId != null);
         currentSectionInitialPosition = 0;
     }
     
-    public void executeTicks(MIDIGeneratorInterface generator, int ticks) throws ImprovisoException, InvalidMidiDataException {
+    public MIDINoteList executeTicks(int ticks) throws ImprovisoException, InvalidMidiDataException {
         int remainingTicks = ticks;
-        
         MIDINoteList list = new MIDINoteList();
+        
+        if (!this.started) {
+            this.started = true;
+            getInitialSection();
+            list.add(new MIDITempo(currentSectionInitialPosition, sections.get(currentSectionId).getTempo()));
+        }
         
         while (remainingTicks > 0 && currentSectionId != null) {
             Section currentSection = sections.get(currentSectionId);
@@ -206,22 +200,33 @@ public class Composition implements java.io.Serializable {
             
             if (currentSection.isFinished()) {
                 currentSectionInitialPosition += currentSection.getCurrentRealTimePosition();
-                if(sectionDestinations.get(currentSectionId).getNumArrows() > 0) {
-                    currentSectionId = sectionDestinations.get(currentSectionId).getNextDestination(random);
+                currentSectionId = sectionDestinations.get(currentSectionId).getNextDestination(random, infinite);
+                
+                if (currentSectionId != null) {
                     sections.get(currentSectionId).initialize(this.random);
-                    generator.setTempo(sections.get(currentSectionId).getTempo(), currentSectionInitialPosition);
-                } else {
-                    currentSectionId = null;
+                    list.add(new MIDITempo(currentSectionInitialPosition, sections.get(currentSectionId).getTempo()));
                 }
             }
         }
         
-        generator.addNotes(list);
+        return list;
+    }
+    
+    private void getInitialSection() throws ImprovisoException {
+        if (initialSections.getNumArrows() > 0) {
+            currentSectionId = initialSections.getNextDestination(this.random, infinite);
+        } else if (!sections.isEmpty()) {
+            currentSectionId = sections.keySet().iterator().next();
+        } else {
+            throw new ImprovisoException("Composition has no starting sections");
+        }
+        
+        sections.get(currentSectionId).initialize(this.random);
     }
     
     public boolean getIsFinished()
     {
-        return currentSectionId == null;
+        return this.started && currentSectionId == null;
     }
     
     /**
@@ -245,5 +250,9 @@ public class Composition implements java.io.Serializable {
         generator.setTimeSignature(currentSection.getTimeSignatureNumerator(), currentSection.getTimeSignatureDenominator(), 0);
 
         generator.addNotes(currentSection.execute(this.getRandom()).offsetNotes(0));
+    }
+
+    MIDITrackList getMIDITrackList() {
+        return this.MIDITracks;
     }
 }

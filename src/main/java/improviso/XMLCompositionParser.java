@@ -341,6 +341,17 @@ public class XMLCompositionParser {
         if (arrowElement.hasAttribute("maxExecutions")) {
             arrowBuilder.setMaxExecutions(Integer.parseInt(arrowElement.getAttribute("maxExecutions")));
         }
+        if (arrowElement.hasAttribute("mode")) {
+            String mode = arrowElement.getAttribute("mode");
+            System.out.println(mode);
+            if (mode.equals("endWhenFinite")) {
+                arrowBuilder.setExhaustExecutionsMode(Arrow.ExhaustExecutionsModes.endWhenFinite);
+            } else if (mode.equals("end")) {
+                arrowBuilder.setExhaustExecutionsMode(Arrow.ExhaustExecutionsModes.end);
+            } else {
+                arrowBuilder.setExhaustExecutionsMode(Arrow.ExhaustExecutionsModes.remove);
+            }
+        }
         if (arrowElement.hasAttribute("finishAfterMax")) {
             arrowBuilder.setEndCompositionAfterMax(true);
         }

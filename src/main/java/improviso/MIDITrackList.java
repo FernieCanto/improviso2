@@ -12,5 +12,7 @@ import java.util.ArrayList;
  * @author User
  */
 public class MIDITrackList extends ArrayList<MIDITrack> {
-    
+    public int getChannel(int index){
+        return this.get(index - 1).getChannel();
+    }
 }

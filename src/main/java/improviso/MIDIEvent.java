@@ -5,11 +5,15 @@
  */
 package improviso;
 
+import java.util.ArrayList;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
+
 /**
  *
  * @author LENOVO G40
  */
-public class MIDIEvent {
+abstract public class MIDIEvent {
     final private long start;
     
     public static MIDIEvent createEventWithOffset(MIDIEvent event, long offset) {
@@ -39,4 +43,6 @@ public class MIDIEvent {
     public long getStart() {
         return start;
     }
+    
+    abstract public ArrayList<MidiEvent> getEvents(MIDITrackList list) throws InvalidMidiDataException;
 }

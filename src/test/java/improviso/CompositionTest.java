@@ -223,7 +223,7 @@ public class CompositionTest {
         when(section1.getCurrentRealTimePosition()).thenReturn(0, 250, 250, 320);
         
         FixedSection section2 = mock(FixedSection.class);
-        when(section2.getTempo()).thenReturn(120);
+        when(section2.getTempo()).thenReturn(130);
         when(section2.executeTicks(any(Random.class), eq(180))).thenReturn(
                 new MIDINoteList(notes3)
         );
@@ -248,36 +248,32 @@ public class CompositionTest {
                 .build()
         );
         
-        MIDIGenerator generator = mock(MIDIGenerator.class);
-        InOrder generatorInOrder = inOrder(generator);
+        composition.initialize();
         
-        composition.initialize(generator);
+        MIDINoteList generatedNotes1 = composition.executeTicks(250);
+        
         verify(section1).initialize(any(Random.class));
         
-        composition.executeTicks(generator, 250);
-        ArgumentCaptor<MIDINoteList> argumentNotes1 = ArgumentCaptor.forClass(MIDINoteList.class);
-        generatorInOrder.verify(generator).addNotes(argumentNotes1.capture());
-        
-        assertEquals(2, argumentNotes1.getValue().size());
-        assertNote((MIDINote)argumentNotes1.getValue().get(0), 20,   0, 100, 100, 1);
-        assertNote((MIDINote)argumentNotes1.getValue().get(1), 25, 100,  50, 100, 1);
+        assertEquals(3, generatedNotes1.size());
+        assertTrue(generatedNotes1.get(0) instanceof MIDITempo);
+        assertEquals(120, ((MIDITempo)generatedNotes1.get(0)).getTempo());
+        assertNote((MIDINote)generatedNotes1.get(1), 20,   0, 100, 100, 1);
+        assertNote((MIDINote)generatedNotes1.get(2), 25, 100,  50, 100, 1);
         assertFalse(composition.getIsFinished());
         
-        ArgumentCaptor<MIDINoteList> argumentNotes2 = ArgumentCaptor.forClass(MIDINoteList.class);
-        composition.executeTicks(generator, 250);
-        generatorInOrder.verify(generator).addNotes(argumentNotes2.capture());
+        MIDINoteList generatedNotes2 = composition.executeTicks(250);
         
-        assertEquals(2, argumentNotes2.getValue().size());
-        assertNote((MIDINote)argumentNotes2.getValue().get(0), 30, 250, 100, 100, 1);
-        assertNote((MIDINote)argumentNotes2.getValue().get(1), 35, 320,  30,  90, 1);
+        assertEquals(3, generatedNotes2.size());
+        assertNote((MIDINote)generatedNotes2.get(0), 30, 250, 100, 100, 1);
+        assertTrue(generatedNotes2.get(1) instanceof MIDITempo);
+        assertEquals(130, ((MIDITempo)generatedNotes2.get(1)).getTempo());
+        assertNote((MIDINote)generatedNotes2.get(2), 35, 320,  30,  90, 1);
         assertFalse(composition.getIsFinished());
         
-        ArgumentCaptor<MIDINoteList> argumentNotes3 = ArgumentCaptor.forClass(MIDINoteList.class);
-        composition.executeTicks(generator, 250);
-        generatorInOrder.verify(generator).addNotes(argumentNotes3.capture());
+        MIDINoteList generatedNotes3 = composition.executeTicks(250);
         
-        assertEquals(1, argumentNotes3.getValue().size());
-        assertNote((MIDINote)argumentNotes3.getValue().get(0), 40, 510,  20,  95, 1);
+        assertEquals(1, generatedNotes3.size());
+        assertNote((MIDINote)generatedNotes3.get(0), 40, 510,  20,  95, 1);
         assertTrue(composition.getIsFinished());
     }
     
